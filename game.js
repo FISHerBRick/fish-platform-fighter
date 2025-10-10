@@ -18,13 +18,21 @@ document.addEventListener("keyup", e => keys[e.key] = false);
 
 function update() {
   // Movement
-  if (keys["ArrowRight"]) player.x += 5;
-  if (keys["ArrowLeft"]) player.x -= 5;
-  if (keys[" "] && player.grounded) {
-    player.dy = jumpPower;
-    player.grounded = false;
-  }
+ // Move Right → ArrowRight or D
+if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+  player.x += 5;
+}
 
+// Move Left → ArrowLeft or A
+if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+  player.x -= 5;
+}
+
+// Jump → Space, W, or ArrowUp
+if ((keys[" "] || keys["w"] || keys["W"] || keys["ArrowUp"]) && player.grounded) {
+  player.dy = jumpPower;
+  player.grounded = false;
+}
   // Gravity
   player.dy += gravity;
   player.y += player.dy;
