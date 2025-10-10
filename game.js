@@ -22,7 +22,7 @@ const platforms = [
 ];
 
 document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+document.addEventListener("keyup", E => keys[E.key] = false);
 
 function update() {
   // Movement
