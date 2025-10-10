@@ -18,9 +18,9 @@ document.addEventListener("keyup", e => keys[e.key] = false);
 
 function update() {
   // Movement
-  if (keys["ArrowRight"]) player.x += 5;
-  if (keys["ArrowLeft"]) player.x -= 5;
-  if (keys[" "] && player.grounded) {
+  if (keys["D"]) player.x += 5;
+  if (keys["A"]) player.x -= 5;
+  if (keys["W"] && player.grounded) {
     player.dy = jumpPower;
     player.grounded = false;
   }
