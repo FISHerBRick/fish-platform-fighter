@@ -24,9 +24,7 @@ function nextLevel() {
 }
 
 function update() {
-  if (keys["ArrowRight"]) player.x += 5;
-  if (keys["ArrowLeft"]) player.x -= 5;
-  // Move Right → ArrowRight or D
+  
 if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
   player.x += 5;
 }
