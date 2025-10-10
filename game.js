@@ -1,6 +1,10 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+const res = await fetch('tutoriallevel.tmj');
+const mapData = await res.json();
+
+
 // Dynamic resize
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -22,7 +26,7 @@ const platforms = [
 ];
 
 document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", E => keys[E.key] = false);
+document.addEventListener("keyup", e => keys[e.key] = false);
 
 function update() {
   // Movement
