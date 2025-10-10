@@ -24,17 +24,15 @@ function nextLevel() {
 }
 
 function update() {
-  
+  //movement
 if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
   player.x += 5;
 }
 
-// Move Left → ArrowLeft or A
 if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
   player.x -= 5;
 }
 
-// Jump → Space, W, or ArrowUp
 if ((keys[" "] || keys["w"] || keys["W"] || keys["ArrowUp"]) && player.grounded) {
   player.dy = jumpPower;
   player.grounded = false;
