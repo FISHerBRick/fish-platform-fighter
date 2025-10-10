@@ -1,8 +1,3 @@
-import { levels } from './levels.js';
-
-let currentLevel = 0;
-let platforms = structuredClone(levels[currentLevel]);
-
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -11,37 +6,41 @@ const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
 
+const platforms = [
+  { x: 0, y: 350, w: 800, h: 50 },
+  { x: 200, y: 280, w: 100, h: 10 },
+  { x: 350, y: 220, w: 100, h: 10 },
+  { x: 500, y: 160, w: 100, h: 10 },
+];
+
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
-function nextLevel() {
-  currentLevel++;
-  if (currentLevel >= levels.length) currentLevel = 0; // loop back
-  platforms = structuredClone(levels[currentLevel]);
-  player.x = 50;
-  player.y = 300;
-  player.dy = 0;
-}
-
 function update() {
-  //movement
-if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
-  player.x += 5;
-}
+  // Movement
+  if (keys["ArrowRight" "D"]) player.x += 5;
+  if (keys["ArrowLeft" "A"]) player.x -= 5;
+  if (keys[" " "W" "ArrowUp"] && player.grounded) {
+    player.dy = jumpPower;
+    player.grounded = false;
+  }
 
-if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
-  player.x -= 5;
-}
+  // Gravity
+  player.dy += gravity;
+  player.y += player.dy;
 
-if ((keys[" "] || keys["w"] || keys["W"] || keys["ArrowUp"]) && player.grounded) {
-  player.dy = jumpPower;
+  // Collision
   player.grounded = false;
-}
+  for (const p of platforms) {
+    if (player.x < p.x + p.w && player.x + player.w > p.x &&
+        player.y + player.h < p.y + 10 && player.y + player.h + player.dy >= p.y) {
+      player.y = p.y - player.h;
+      player.dy = 0;
+      player.grounded = true;
+    }
+  }
 
-
-  // Simple level completion: reach the right edge
-  if (player.x > canvas.width) nextLevel();
-
+  // Draw
   ctx.fillStyle = "#222";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
