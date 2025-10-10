@@ -19,14 +19,13 @@ document.addEventListener("keyup",   e => keys[e.key.toLowerCase()] = false);
 
 function update() {
 
-
-// movement checks (note arrow keys become "arrowright"/"arrowleft"/"arrowup")
-if (keys["arrowright"] || keys["d"]) player.x += 5;
-if (keys["arrowleft"]  || keys["a"]) player.x -= 5;
-if ((keys[" "] || keys["w"] || keys["arrowup"]) && player.grounded) {
+if (keys["ArrowRight"] || keys["D"] || keys["d"]) player.x += 5;
+if (keys["ArrowLeft"]  || keys["A"] || keys["a"]) player.x -= 5;
+if ((keys[" "] || keys["W"] || keys["w"] || keys["ArrowUp"]) && player.grounded) {
   player.dy = jumpPower;
   player.grounded = false;
 }
+
 
 
   // Gravity
