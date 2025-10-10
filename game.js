@@ -48,13 +48,6 @@ function update() {
     }
   }
 
-  // === Camera Logic ===
-  // Camera centers on the player but clamps to level size
-  const camera = {
-    x: player.x - canvas.width / 2 + player.w / 2,
-    y: 0 // You can add vertical camera later
-  };
-
   // Draw
   ctx.fillStyle = "#222";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
