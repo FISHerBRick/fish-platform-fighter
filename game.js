@@ -13,17 +13,21 @@ const platforms = [
   { x: 500, y: 160, w: 100, h: 10 },
 ];
 
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+// normalize keys to lowercase when storing them
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup",   e => keys[e.key.toLowerCase()] = false);
 
 function update() {
-  // Movement
-  if (keys["ArrowRight"] ["D"] ["d"]) player.x += 5;
-  if (keys["ArrowLeft"] ["A"] ["a"]) player.x -= 5;
-  if (keys[" "] ["W"] ["w"] ["ArrowUp"] && player.grounded) {
-    player.dy = jumpPower;
-    player.grounded = false;
-  }
+
+
+// movement checks (note arrow keys become "arrowright"/"arrowleft"/"arrowup")
+if (keys["arrowright"] || keys["d"]) player.x += 5;
+if (keys["arrowleft"]  || keys["a"]) player.x -= 5;
+if ((keys[" "] || keys["w"] || keys["arrowup"]) && player.grounded) {
+  player.dy = jumpPower;
+  player.grounded = false;
+}
+
 
   // Gravity
   player.dy += gravity;
