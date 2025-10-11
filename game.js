@@ -41,7 +41,7 @@ function update() {
   }
 
   // Draw
-  ctx.fillStyle = "download.jpg";
+  ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#0f0";
   ctx.fillRect(player.x, player.y, player.w, player.h);
