@@ -6,53 +6,17 @@ const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
 
-let platforms = [];
-let mapLoaded = false;
+const platforms = [
+  { x: 0, y: 350, w: 800, h: 50 },
+  { x: 200, y: 280, w: 100, h: 10 },
+  { x: 350, y: 220, w: 100, h: 10 },
+  { x: 500, y: 160, w: 100, h: 10 },
+];
 
-// Load the Tiled map (.tmj)
-fetch("tutorial.js")
-  .then(res => res.json())
-  .then(map => {
-    const tileWidth = map.tilewidth;
-    const tileHeight = map.tileheight;
-    const layer = map.layers.find(l => l.type === "tilelayer");
-
-    // Build platform rectangles from tile data
-    const cols = map.width;
-    const rows = map.height;
-    const data = layer.data;
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const tile = data[y * cols + x];
-        if (tile !== 0) { // A non-zero tile means solid
-          platforms.push({
-            x: x * tileWidth,
-            y: y * tileHeight,
-            w: tileWidth,
-            h: tileHeight
-          });
-        }
-      }
-    }
-
-    // Get PlayerSpawn object from "Objects" layer
-    const objLayer = map.layers.find(l => l.name === "Objects");
-    const spawn = objLayer.objects.find(o => o.name === "PlayerSpawn");
-    player.x = spawn.x;
-    player.y = spawn.y - player.h; // adjust for height
-
-    mapLoaded = true;
-    update();
-  });
-
-// Movement keys
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 function update() {
-  if (!mapLoaded) return requestAnimationFrame(update);
-
   // Movement
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
@@ -88,3 +52,5 @@ function update() {
 
   requestAnimationFrame(update);
 }
+
+update();
