@@ -10,7 +10,7 @@ let platforms = [];
 let mapLoaded = false;
 
 // Load the Tiled map (.tmj)
-fetch("levels/tutorial.tmj")
+fetch("tutorial.js")
   .then(res => res.json())
   .then(map => {
     const tileWidth = map.tilewidth;
