@@ -1,7 +1,12 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 400;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); // initial call
 
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
 const gravity = 0.6;
