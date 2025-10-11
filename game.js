@@ -129,3 +129,4 @@ document.addEventListener("keydown", e => {
 });
 
 //Start Game
+update();
