@@ -50,10 +50,12 @@ fetch("levels/tutorial.tmj")
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
+const camera = { x: 0, y: 0 };
+
 function update() {
   if (!mapLoaded) return requestAnimationFrame(update);
 
-  // Movement
+  // === MOVEMENT ===
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
   if (keys["w"] && player.grounded) {
@@ -61,11 +63,11 @@ function update() {
     player.grounded = false;
   }
 
-  // Gravity
+  // === GRAVITY ===
   player.dy += gravity;
   player.y += player.dy;
 
-  // Collision
+  // === COLLISION ===
   player.grounded = false;
   for (const p of platforms) {
     if (player.x < p.x + p.w && player.x + player.w > p.x &&
@@ -76,15 +78,34 @@ function update() {
     }
   }
 
-  // Draw
+  // === CAMERA ===
+  // Center camera on player (smooth follow)
+  const targetX = player.x + player.w / 2 - canvas.width / 2;
+  const targetY = player.y + player.h / 2 - canvas.height / 2;
+
+  // Smooth damping for nicer camera motion
+  camera.x += (targetX - camera.x) * 0.1;
+  camera.y += (targetY - camera.y) * 0.1;
+
+  // Prevent camera from going beyond the map
+  const mapPixelWidth = 50 * 16;  // map.width * tileWidth
+  const mapPixelHeight = 30 * 16; // map.height * tileHeight
+  camera.x = Math.max(0, Math.min(camera.x, mapPixelWidth - canvas.width));
+  camera.y = Math.max(0, Math.min(camera.y, mapPixelHeight - canvas.height));
+
+  // === DRAW ===
   ctx.fillStyle = "#222";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#0f0";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
-
+  // Draw platforms
   ctx.fillStyle = "#888";
-  for (const p of platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
+  for (const p of platforms)
+    ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, p.h);
+
+  // Draw player
+  ctx.fillStyle = "#0f0";
+  ctx.fillRect(player.x - camera.x, player.y - camera.y, player.w, player.h);
 
   requestAnimationFrame(update);
 }
+
