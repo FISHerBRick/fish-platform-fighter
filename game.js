@@ -58,13 +58,22 @@ function update() {
     return;
   }
 
-  // Movement
-  if (keys["d"]) player.x += 5;
-  if (keys["a"]) player.x -= 5;
-  if (keys["w"] && player.grounded) {
-    player.dy = jumpPower;
-    player.grounded = false;
-  }
+ // Movement
+let moveSpeed = 5;
+
+if (keys["a"]) {
+  // Only move left if player isn’t already at the left edge
+  if (player.x > 0) player.x -= moveSpeed;
+}
+if (keys["d"]) {
+  // Only move right if player isn’t at right edge
+  if (player.x + player.w < canvas.width) player.x += moveSpeed;
+}
+if (keys["w"] && player.grounded) {
+  player.dy = jumpPower;
+  player.grounded = false;
+}
+
 
   // Gravity
   player.dy += gravity;
