@@ -2,8 +2,8 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
-const gravity = 0.3;
-const jumpPower = -6;
+const gravity = 0.6;
+const jumpPower = -12;
 const keys = {};
 
 const platforms = [
