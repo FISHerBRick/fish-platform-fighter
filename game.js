@@ -57,40 +57,44 @@ function update() {
     ctx.fillText("HAHA YOU LOST! Press R to Restart", 180,200);
     return;
   }
-
- // Movement
+// Movement with nextX/nextY
 let moveSpeed = 5;
+let nextX = player.x;
+let nextY = player.y + player.dy;
 
-if (keys["a"]) {
-  // Only move left if player isn’t already at the left edge
-  if (player.x > 0) player.x -= moveSpeed;
-}
-if (keys["d"]) {
-  // Only move right if player isn’t at right edge
-  if (player.x + player.w < canvas.width) player.x += moveSpeed;
-}
+// Horizontal movement
+if (keys["a"]) nextX -= moveSpeed;
+if (keys["d"]) nextX += moveSpeed;
+
+// Jump
 if (keys["w"] && player.grounded) {
   player.dy = jumpPower;
   player.grounded = false;
 }
 
+// Gravity
+player.dy += gravity;
+nextY = player.y + player.dy;
 
-  // Gravity
-  player.dy += gravity;
-  player.y += player.dy;
-
-  // Collision
-  player.grounded = false;
-  for (const p of platforms) {
-    if (
-      player.x < p.x + p.w && player.x + player.w > p.x &&
-      player.y + player.h < p.y + 10 && player.y + player.h + player.dy >= p.y
-    ) {
-      player.y = p.y - player.h;
-      player.dy = 0;
-      player.grounded = true;
-    }
+// Collision
+player.grounded = false;
+for (const p of platforms) {
+  if (
+    nextX < p.x + p.w &&
+    nextX + player.w > p.x &&
+    player.y + player.h <= p.y &&
+    nextY + player.h >= p.y
+  ) {
+    nextY = p.y - player.h;
+    player.dy = 0;
+    player.grounded = true;
   }
+}
+
+// Apply movement after collision check
+player.x = Math.max(0, Math.min(nextX, canvas.width - player.w));
+player.y = nextY;
+
 
   //Enemy Logic
   spawnTimer--;
