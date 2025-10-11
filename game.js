@@ -23,11 +23,12 @@ function update() {
   if (keys["w"] && player.grounded) {
     player.dy = jumpPower;
     player.grounded = false;
+  }
    // Stop the player from going too far left or right
 if (player.x < -player.w / 2) player.x = -player.w / 2;
 if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
-  }
+
 
   // Gravity
   player.dy += gravity;
