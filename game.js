@@ -41,8 +41,6 @@ function update() {
   }
 
   // Draw
-  ctx.fillStyle = "#222";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = "#0f0";
   ctx.fillRect(player.x, player.y, player.w, player.h);
