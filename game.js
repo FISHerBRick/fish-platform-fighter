@@ -15,9 +15,8 @@ const platforms = [
   { x: 500, y: 160, w: 100, h: 10 },
 ];
 
-//Enemies
-let enemies = [];
-let spawnTimer= 0;
+//Enemy
+let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2 };
 
 //Game State
 let score = 0;
@@ -25,17 +24,6 @@ let gameOver = false;
 
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
-
-//Enemy Spawn
-function spawnEnemy() {
-  enemies.push({
-    x: 800,
-    y: 320,
-    w: 30,
-    h: 30,
-    speed: 3 + Math.random() * 2
-  });
-}
 
 //Reset Game
 function resetGame() {
@@ -57,67 +45,63 @@ function update() {
     ctx.fillText("HAHA YOU LOST! Press R to Restart", 180,200);
     return;
   }
-// Movement with nextX/nextY
+
+ // Movement
 let moveSpeed = 5;
-let nextX = player.x;
-let nextY = player.y + player.dy;
 
-// Horizontal movement
-if (keys["a"]) nextX -= moveSpeed;
-if (keys["d"]) nextX += moveSpeed;
-
-// Jump
+if (keys["a"]) {
+  // Only move left if player isn’t already at the left edge
+  if (player.x > 0) player.x -= moveSpeed;
+}
+if (keys["d"]) {
+  // Only move right if player isn’t at right edge
+  if (player.x + player.w < canvas.width) player.x += moveSpeed;
+}
 if (keys["w"] && player.grounded) {
   player.dy = jumpPower;
   player.grounded = false;
 }
 
-// Gravity
-player.dy += gravity;
-nextY = player.y + player.dy;
 
-// Collision
-player.grounded = false;
-for (const p of platforms) {
-  if (
-    nextX < p.x + p.w &&
-    nextX + player.w > p.x &&
-    player.y + player.h <= p.y &&
-    nextY + player.h >= p.y
-  ) {
-    nextY = p.y - player.h;
-    player.dy = 0;
-    player.grounded = true;
+  // Gravity
+  player.dy += gravity;
+  player.y += player.dy;
+
+  // Collision
+  player.grounded = false;
+  for (const p of platforms) {
+    if (
+      player.x < p.x + p.w && player.x + player.w > p.x &&
+      player.y + player.h < p.y + 10 && player.y + player.h + player.dy >= p.y
+    ) {
+      player.y = p.y - player.h;
+      player.dy = 0;
+      player.grounded = true;
+    }
   }
-}
-
-// Apply movement after collision check
-player.x = Math.max(0, Math.min(nextX, canvas.width - player.w));
-player.y = nextY;
-
 
   //Enemy Logic
-  spawnTimer--;
-  if (spawnTimer <=0) {
-    spawnEnemy();
-    spawnTimer = 120 + Math.random() * 60; // every 2 seconds
-  }
+  const distanceX = player.x - enemy.x;
+  const distanceY = player.y - enemy.y;
+  const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-  for (const e of enemies) {
-    e.x -= e.speed;
-  
+  if (distance < 200) { //Enemy detects player within 200px
+    if (distanceX > 0) enemy.x += enemy.speed;
+    if (distanceX < 0) enemy.x -= enemy.speed;
+    if (distanceY > 0) enemy.y += enemy.speed;
+    if (distanceY < 0) enemy.y -= enemy.speed;
+  }
 
   //Enemy collide with player
   if (
-    player.x < e.x + e.w && player.x + player.w > e.x &&
-    player.y < e.y + e.h && player.y + player.h > e.y
+    player.x < enemy.x + enemy.w &&
+    player.x + player.w > enemy.x &&
+    player.y < enemy.y + enemy.h &&
+    player.y + player.h > enemy.y
   ) {
     gameOver = true;
   }
 }
-
-  //Remove off-screen enemies
-  enemies = enemies.filter(e => e.x > -50);
 
   //Score
   score++;
@@ -133,9 +117,9 @@ ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#888";
   for (const p of platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
 
-//Enemies
-ctx.fillStyle = "#ff0";
-for (const e of enemies) ctx.fillRect (e.x, e.y, e.w, e.h);
+//Enemy
+ctx.fillStyle = "#f00";
+ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
 
 //Score
 ctx.fillStyle = "#fff";
@@ -151,4 +135,3 @@ document.addEventListener("keydown", e => {
 });
 
 //Start Game
-update();
