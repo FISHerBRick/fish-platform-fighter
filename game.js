@@ -92,7 +92,7 @@ const distanceY = player.y - enemy.y;
 const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
 // Trigger enemy chase if player comes close
-if (!enemy.triggered && distance < 300) {
+if (!enemy.triggered && distance < 500) {
   enemy.triggered = true;
 }
 
