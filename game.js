@@ -1,61 +1,52 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
+// Camera
 let cameraX = 0;
 
-//Player
+// Player
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
 const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
 
-//Platforms
+// Platforms
 const platforms = [
-  { x: 0, y: 350, w: 800, h: 50 },
-  { x: 700, y: 300, w: 100, h: 10 },
-  { x: 900, y: 250, w: 100, h: 10 },
-  { x: 1100, y: 200, w: 100, h: 10 },
-  { x: 1300, y: 150, w: 100, h: 10 }
+  { x: 0, y: 350, w: 2000, h: 50 } // long ground
 ];
 
-//Enemy
+// Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2, triggered: false };
 
-//Game State
+// Game state
 let score = 0;
 let gameOver = false;
 
-//Controls
-document.addEventListener("keydown", (e) => (keys[e.key] = true));
-document.addEventListener("keyup", (e) => (keys[e.key] = false));
+// Controls
+document.addEventListener("keydown", (e) => keys[e.key] = true);
+document.addEventListener("keyup", (e) => keys[e.key] = false);
 
-//Reset Game
+// Reset game
 function resetGame() {
   player.x = 50;
   player.y = 300;
   player.dy = 0;
   player.grounded = false;
-  score = 0;
   gameOver = false;
-
-  //Reset enemy position and trigger
+  score = 0;
   enemy.x = 600;
   enemy.y = 320;
   enemy.triggered = false;
 }
 
-//Update Loop
+// Update loop
 function update() {
-  // Clear screen
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "white";
     ctx.font = "28px monospace";
-    ctx.fillText("YOU LOST!", 300, 200);
-    ctx.font = "20px monospace";
-    ctx.fillText("Press R to Restart", 280, 240);
+    ctx.fillText("Game Over! Press R to Restart", 150, 200);
     requestAnimationFrame(update);
     return;
   }
@@ -68,11 +59,12 @@ function update() {
     player.grounded = false;
   }
 
-  // Gravity + collision
+  // Gravity
   player.dy += gravity;
   player.y += player.dy;
   player.grounded = false;
 
+  // Collision with platforms
   for (const p of platforms) {
     if (
       player.x < p.x + p.w &&
@@ -86,7 +78,7 @@ function update() {
     }
   }
 
-  // Keep player in world bounds
+  // Keep player in bounds
   if (player.x < 0) player.x = 0;
 
   // Enemy logic
@@ -94,18 +86,13 @@ function update() {
   const dy = player.y - enemy.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
 
-  // Trigger chase if player is close
-  if (!enemy.triggered && dist < 300) {
-    enemy.triggered = true;
-  }
-
-  // Enemy moves if triggered
+  if (!enemy.triggered && dist < 300) enemy.triggered = true;
   if (enemy.triggered) {
     enemy.x += Math.sign(dx) * enemy.speed;
     enemy.y += Math.sign(dy) * enemy.speed;
   }
 
-  // Enemy collide with player
+  // Collision with player
   if (
     player.x < enemy.x + enemy.w &&
     player.x + player.w > enemy.x &&
@@ -125,9 +112,7 @@ function update() {
 
   // Draw platforms
   ctx.fillStyle = "#888";
-  for (const p of platforms) {
-    ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
-  }
+  for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
 
   // Draw enemy
   ctx.fillStyle = "#f00";
@@ -137,21 +122,20 @@ function update() {
   ctx.fillStyle = "#0f0";
   ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
-  // Draw score
+  // Score
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
 
   score++;
-
   requestAnimationFrame(update);
 }
 
-//Restart on R
-document.addEventListener("keydown", (e) => {
-  if (e.key === "r" || e.key === "R") resetGame();
+// Restart
+document.addEventListener("keydown", e => {
+  if (e.key === "r") resetGame();
 });
 
-//Start game
+// Start game
 update();
 
