@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 let cameraX = 0;
 
 // Player
-const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false attacking: false, 
+const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false attacking: true, 
   attackCooldown: 0 };
 const gravity = 0.6;
 const jumpPower = -12;
