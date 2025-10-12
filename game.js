@@ -30,7 +30,7 @@ let enemy = {
   gravity: 0.6,
   jumpPower: -10,
   grounded: false,
-  triggered: false
+  triggered: false,
   patrolDir: 1
 };
 
