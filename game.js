@@ -60,6 +60,11 @@ function update() {
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
 
+  // Keep player inside screen
+if (player.x < 0) player.x = 0;
+if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+
+
   if (keys["w"] && player.grounded) {
     player.dy = jumpPower;
     player.grounded = false;
