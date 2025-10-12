@@ -16,6 +16,15 @@ platforms.push(
   { x: 1300, y: 150, w: 100, h: 10 },
 );
 
+const platforms = [
+  { x: 0, y: 350, w: 800, h: 50 },
+  { x: 200, y: 280, w: 100, h: 10 },
+  { x: 350, y: 220, w: 100, h: 10 },
+  { x: 500, y: 160, w: 100, h: 10 },
+  { x: 650, y: 200, w: 120, h: 10 }, // new platform
+];
+
+
 //Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2 };
 
