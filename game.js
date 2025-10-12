@@ -1,6 +1,9 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 let cameraX = 0;
+let currentLevelName = "tutorial";
+let currentLevel = null;
+
 
 //Player
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
@@ -8,13 +11,25 @@ const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
 
-//Platforms
-const platforms = [
-  { x: 0, y: 350, w: 800, h: 50 },
-  { x: 200, y: 280, w: 100, h: 10 },
-  { x: 350, y: 220, w: 100, h: 10 },
-  { x: 500, y: 160, w: 100, h: 10 },
-];
+function loadLevel(name) {
+  const level = window.LEVELS[name];
+  if (!level) {
+    console.error(`Level "${name}" not found!`);
+    return;
+  }
+
+  // Copy data from level definition
+  platforms.length = 0;
+  platforms.push(...level.platforms);
+
+  enemy = { ...level.enemy };
+  player.x = level.start.x;
+  player.y = level.start.y;
+  player.dy = 0;
+  player.grounded = false;
+
+  console.log(`Loaded level: ${name}`);
+}
 
 //Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2 };
