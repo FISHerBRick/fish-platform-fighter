@@ -164,6 +164,7 @@ if (
 }
 
 
-
+loadMap().then(update);
 //Start Game
-update();
+update(drawMap(ctx, cameraX);
+);
