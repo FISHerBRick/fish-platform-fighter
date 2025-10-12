@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>2D Parkour Game</title>
-  <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: "download.jpg";
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-  }
-</style>
-</head>
-<body>
-  <canvas id="game" width="800" height="400"></canvas>
-  <script src="game.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>2D Parkour Game</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        background: url("download.jpg") no-repeat center center fixed;
+        background-size: cover;
+      }
+      canvas {
+        display: block;
+        margin: 0 auto;
+        border: 2px solid white;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="800" height="400"></canvas>
+    <script src="game.js"></script>
+  </body>
 </html>
