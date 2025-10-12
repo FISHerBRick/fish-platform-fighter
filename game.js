@@ -1,7 +1,5 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
-// Camera
 let cameraX = 0;
 
 // Player
@@ -12,42 +10,52 @@ const keys = {};
 
 // Platforms
 const platforms = [
-  { x: 0, y: 350, w: 2000, h: 50 } // long ground
+  { x: 0, y: 350, w: 800, h: 50 },   // original ground
+  { x: 700, y: 300, w: 100, h: 10 },
+  { x: 900, y: 250, w: 100, h: 10 },
+  { x: 1100, y: 200, w: 100, h: 10 },
+  { x: 1300, y: 150, w: 100, h: 10 }
 ];
 
 // Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2, triggered: false };
 
-// Game state
+// Game State
 let score = 0;
 let gameOver = false;
 
-// Controls
-document.addEventListener("keydown", (e) => keys[e.key] = true);
-document.addEventListener("keyup", (e) => keys[e.key] = false);
+document.addEventListener("keydown", (e) => (keys[e.key] = true));
+document.addEventListener("keyup", (e) => (keys[e.key] = false));
 
-// Reset game
+// Reset Game
 function resetGame() {
   player.x = 50;
   player.y = 300;
   player.dy = 0;
   player.grounded = false;
-  gameOver = false;
   score = 0;
+  gameOver = false;
+
+  // Reset enemy
   enemy.x = 600;
   enemy.y = 320;
-  enemy.triggered = false;
+  enemy.triggered = false; // ✅ properly reset
 }
 
-// Update loop
+// Update Loop
 function update() {
+  // Clear the screen
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Handle game over
   if (gameOver) {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
-    ctx.fillText("Game Over! Press R to Restart", 150, 200);
-    requestAnimationFrame(update);
+    ctx.fillText("HAHA YOU LOST!", 250, 200);
+    ctx.font = "20px monospace";
+    ctx.fillText("Press R to Restart", 280, 240);
     return;
   }
 
@@ -59,12 +67,11 @@ function update() {
     player.grounded = false;
   }
 
-  // Gravity
+  // Gravity + collision
   player.dy += gravity;
   player.y += player.dy;
   player.grounded = false;
 
-  // Collision with platforms
   for (const p of platforms) {
     if (
       player.x < p.x + p.w &&
@@ -78,21 +85,26 @@ function update() {
     }
   }
 
-  // Keep player in bounds
+  // Keep player in world bounds
   if (player.x < 0) player.x = 0;
 
-  // Enemy logic
-  const dx = player.x - enemy.x;
-  const dy = player.y - enemy.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
+  // Enemy chase logic
+  const distanceX = player.x - enemy.x;
+  const distanceY = player.y - enemy.y;
+  const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-  if (!enemy.triggered && dist < 300) enemy.triggered = true;
-  if (enemy.triggered) {
-    enemy.x += Math.sign(dx) * enemy.speed;
-    enemy.y += Math.sign(dy) * enemy.speed;
+  // Trigger enemy chase if player comes close
+  if (!enemy.triggered && distance < 300) {
+    enemy.triggered = true;
   }
 
-  // Collision with player
+  // Enemy keeps chasing once triggered
+  if (enemy.triggered) {
+    enemy.x += Math.sign(distanceX) * enemy.speed;
+    enemy.y += Math.sign(distanceY) * enemy.speed;
+  }
+
+  // Enemy collide with player
   if (
     player.x < enemy.x + enemy.w &&
     player.x + player.w > enemy.x &&
@@ -102,40 +114,34 @@ function update() {
     gameOver = true;
   }
 
-  // Camera follow
+  // CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
 
-  // Draw background
+  // DRAW everything with camera offset
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw platforms
   ctx.fillStyle = "#888";
   for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
 
-  // Draw enemy
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  // Draw player
   ctx.fillStyle = "#0f0";
   ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
-  // Score
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
 
-  score++;
   requestAnimationFrame(update);
 }
 
-// Restart
-document.addEventListener("keydown", e => {
-  if (e.key === "r") resetGame();
+// Restart listener
+document.addEventListener("keydown", (e) => {
+  if (e.key === "r" || e.key === "R") resetGame();
 });
 
-// Start game
+// Start Game
 update();
-
