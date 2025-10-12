@@ -41,13 +41,11 @@ function resetGame() {
 
 //Update Loop
 function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); //Always clear first
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (gameOver) {
-    //Draw background darker to make text stand out
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
     ctx.fillText("HAHA YOU LOST!", 250, 200);
@@ -56,14 +54,13 @@ function update() {
     return;
   }
 
-  // Movement
+  // Player movement
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
 
-  // Keep player inside screen
-if (player.x < 0) player.x = 0;
-if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
-
+  // Prevent player from leaving screen
+  if (player.x < 0) player.x = 0;
+  if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
   if (keys["w"] && player.grounded) {
     player.dy = jumpPower;
@@ -74,13 +71,13 @@ if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
   player.dy += gravity;
   player.y += player.dy;
 
-  // Collision
+  // Platform collision
   player.grounded = false;
   for (const p of platforms) {
     if (
       player.x < p.x + p.w &&
       player.x + player.w > p.x &&
-      player.y + player.h < p.y + 10 &&
+      player.y + player.h <= p.y &&
       player.y + player.h + player.dy >= p.y
     ) {
       player.y = p.y - player.h;
@@ -89,18 +86,21 @@ if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
     }
   }
 
-  //Enemy chase logic
+  // Enemy chase logic
   const distanceX = player.x - enemy.x;
   const distanceY = player.y - enemy.y;
   const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-  if (distance < 200) {
-    //Enemy detects player within 200px
+  // Only chase if player is within 200px
+  if (distance < 200 && !gameOver) {
     enemy.x += Math.sign(distanceX) * enemy.speed;
     enemy.y += Math.sign(distanceY) * enemy.speed;
   }
 
-  //Enemy collide with player
+  // Prevent enemy from moving off the left side
+  if (enemy.x < 0) enemy.x = 0;
+
+  // Collision check (only if visible)
   if (
     player.x < enemy.x + enemy.w &&
     player.x + player.w > enemy.x &&
@@ -110,25 +110,19 @@ if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
     gameOver = true;
   }
 
-  //Score
+  // Score
   score++;
 
   // Draw
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  //Player
   ctx.fillStyle = "#0f0";
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
-  //Platforms
   ctx.fillStyle = "#888";
   for (const p of platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
 
-  //Enemy
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
 
-  //Score
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
@@ -136,10 +130,6 @@ if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
   requestAnimationFrame(update);
 }
 
-//Restart
-document.addEventListener("keydown", (e) => {
-  if (e.key === "r" || e.key === "R") resetGame();
-});
 
 //Start Game
 update();
