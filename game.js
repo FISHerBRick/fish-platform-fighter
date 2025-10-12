@@ -38,9 +38,10 @@ function resetGame() {
   gameOver = false;
 
   //Reset enemy position
-  enemy.x = 600;
-  enemy.y = 320;
-}
+enemy.x = 600;
+enemy.y = 320;
+enemy.triggered = false; // ✅ reset chase trigger
+
 
 //Update Loop
 function update() {
@@ -79,16 +80,24 @@ function update() {
     }
   }
 
-  // Keep player in world bounds
-  if (player.x < 0) player.x = 0;
+ // Keep player in world bounds
+if (player.x < 0) player.x = 0;
 
- // Enemy chase logic (world coordinates)
+// Initialize triggered property if it doesn't exist
+if (enemy.triggered === undefined) enemy.triggered = false;
+
+// Calculate distance
 const distanceX = player.x - enemy.x;
 const distanceY = player.y - enemy.y;
 const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-// Enemy only chases if player is within 200px
-if (distance < 200) {
+// Trigger enemy chase if player comes close
+if (!enemy.triggered && distance < 200) {
+  enemy.triggered = true;
+}
+
+// Enemy keeps chasing once triggered
+if (enemy.triggered) {
   enemy.x += Math.sign(distanceX) * enemy.speed;
   enemy.y += Math.sign(distanceY) * enemy.speed;
 }
@@ -102,6 +111,7 @@ if (
 ) {
   gameOver = true;
 }
+
 
   // CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
