@@ -97,6 +97,9 @@ function update() {
     enemy.y += Math.sign(dy) * enemy.speed;
   }
 
+  //Keep enemy grounded
+  if (enemy.y > 320) enemy.y = 320;
+
   // Collision with player
   if (
     player.x < enemy.x + enemy.w &&
