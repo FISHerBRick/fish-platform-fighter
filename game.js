@@ -44,6 +44,13 @@ function resetGame() {
 //Update Loop
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Camera follows player (centered)
+cameraX = player.x - canvas.width / 2 + player.w / 2;
+
+// Prevent camera from showing outside world (optional)
+if (cameraX < 0) cameraX = 0;
+
 
   if (gameOver) {
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
