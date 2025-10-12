@@ -4,7 +4,8 @@ const ctx = canvas.getContext("2d");
 let cameraX = 0;
 
 // Player
-const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
+const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false attacking: false, 
+  attackCooldown: 0 };
 const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
@@ -79,6 +80,16 @@ function update() {
     player.grounded = false;
   }
 
+  // Attack input
+if (keys["k"] && player.attackCooldown <= 0) {
+  player.attacking = true;
+  player.attackCooldown = 30; // ~0.5s cooldown (30 frames)
+  setTimeout(() => player.attacking = false, 200); // Attack lasts 200ms
+} else {
+  player.attackCooldown--;
+}
+
+
   // Gravity + collision
   player.dy += gravity;
   player.y += player.dy;
@@ -150,6 +161,38 @@ if (enemy.triggered) {
     player.y + player.h > enemy.y
   ) gameOver = true;
 
+// Player attack hits enemy
+if (player.attacking) {
+  const attackRange = 50; // pixels
+  const facingRight = keys["d"] || (!keys["a"] && enemy.x > player.x);
+
+  const attackBox = {
+    x: facingRight ? player.x + player.w : player.x - attackRange,
+    y: player.y,
+    w: attackRange,
+    h: player.h
+  };
+
+  if (
+    attackBox.x < enemy.x + enemy.w &&
+    attackBox.x + attackBox.w > enemy.x &&
+    attackBox.y < enemy.y + enemy.h &&
+    attackBox.y + attackBox.h > enemy.y
+  ) {
+    // Enemy "killed"
+    score += 100;
+    // Respawn enemy elsewhere
+    enemy.x = enemy.spawnX;
+    enemy.y = 320;
+    enemy.triggered = false;
+  }
+
+  // Optional: draw the attack box (for debugging)
+  ctx.fillStyle = "rgba(0,255,0,0.3)";
+  ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
+}
+
+  
   // Camera
   cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
@@ -164,8 +207,9 @@ if (enemy.triggered) {
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  ctx.fillStyle = "#0f0";
+  ctx.fillStyle = player.attacking ? "#ff0" : "#0f0"; // Flash yellow when attacking
   ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
+
 
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
