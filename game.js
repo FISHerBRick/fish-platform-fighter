@@ -103,7 +103,7 @@ if (
 
   // 7️⃣ 📸 CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
-  cameraX = player.y - canvas.width / 2 + player.h / 2;
+  cameraX = player.y - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
 
   // 8️⃣ DRAW everything with camera offset
