@@ -128,7 +128,7 @@ function update() {
     enemy.x += Math.sign(dx) * enemy.speed;
 
     // Jump if player is above and close
-    if (enemy.grounded && dy < -40 && Math.abs(dx) < 150 {
+    if (enemy.grounded && dy < -40 && Math.abs(dx) < 150) {
       enemy.dy = enemy.jumpPower;
       enemy.grounded = false;
   }
