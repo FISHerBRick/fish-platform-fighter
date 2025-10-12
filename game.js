@@ -124,7 +124,7 @@ function update() {
   if (!enemy.triggered && dist < 300) enemy.triggered = true;
   
   if (enemy.triggered) {
-    // Move horizonatally toward player
+    // Chase player
     enemy.x += Math.sign(dx) * enemy.speed;
 
     // Jump if player is above and close
@@ -132,6 +132,12 @@ function update() {
       enemy.dy = enemy.jumpPower;
       enemy.grounded = false;
   }
+} else {
+  // Patrol: move left/right around spawn point
+  enemy.x += enemy.patrolDir * 1; // Patrol speed
+  //Turn around at limits (+-50px from spawn)
+  if (enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
+  if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
 }
 
   // Collision with player
