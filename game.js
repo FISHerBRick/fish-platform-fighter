@@ -19,7 +19,18 @@ const platforms = [
 ];
 
 // Enemy
-let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2, triggered: false };
+let enemy = {
+  x: 600,
+  y: 320,
+  w: 30,
+  h: 30,
+  dy: 0,
+  speed: 2,
+  gravity: 0.6,
+  jumpPower: -10,
+  grounded: false,
+  triggered: false
+};
 
 // Game state
 let score = 0;
@@ -86,19 +97,42 @@ function update() {
 
   if (player.x < 0) player.x = 0;
 
+  // Enemy Physics
+  enemy.dy += enemy.gravity;
+  enemy.y += enemy.dy;
+  enemy.grounded = false;
+
+  // Platform collision for enemy
+  for (const p of platforms) {
+    if (
+      enemy.x < p.x + p.w &&
+      enemy.x + enemy.w > p.x &&
+      enemy.y + enemy.h < p.y + 10 &&
+      enemy.y + enemy.h + enemy.dy >= p.y
+    ) {
+      enemy.y = p.y - enemy.h;
+      enemy.dy = 0;
+      enemy.grounded = true;
+    }
+  }
+  
   // Enemy chase
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
 
   if (!enemy.triggered && dist < 300) enemy.triggered = true;
+  
   if (enemy.triggered) {
+    // Move horizonatally toward player
     enemy.x += Math.sign(dx) * enemy.speed;
-    enemy.y += Math.sign(dy) * enemy.speed;
-  }
 
-  //Keep enemy grounded
-  if (enemy.y > 320) enemy.y = 320;
+    // Jump if player is above and close
+    if (enemy.grounded && dy < -40 && Math.abs(dx) < 150 {
+      enemy.dy = enemy.jumpPower;
+      enemy.grounded = false;
+  }
+}
 
   // Collision with player
   if (
