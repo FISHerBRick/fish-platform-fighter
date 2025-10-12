@@ -207,8 +207,8 @@ if (player.attacking) {
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  ctx.fillStyle = player.attacking ? "#ff0" : "#0f0"; // Flash yellow when attacking
-  ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
+  ctx.fillStyle = "#0f0";
+ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
 
   ctx.fillStyle = "#fff";
