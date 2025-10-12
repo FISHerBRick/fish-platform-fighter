@@ -102,7 +102,6 @@ if (
   gameOver = true;
 }
 
-
   // 7️⃣ 📸 CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
