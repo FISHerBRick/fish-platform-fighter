@@ -9,12 +9,12 @@ const jumpPower = -12;
 const keys = {};
 
 //Platforms
-const platforms = [
-  { x: 0, y: 350, w: 800, h: 50 },
-  { x: 200, y: 280, w: 100, h: 10 },
-  { x: 350, y: 220, w: 100, h: 10 },
-  { x: 500, y: 160, w: 100, h: 10 },
-];
+platforms.push(
+  { x: 700, y: 300, w: 100, h: 10 },
+  { x: 900, y: 250, w: 100, h: 10 },
+  { x: 1100, y: 200, w: 100, h: 10 },
+  { x: 1300, y: 150, w: 100, h: 10 },
+);
 
 //Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2 };
