@@ -2,6 +2,43 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 let cameraX = 0;
 
+// --- Load and render Tiled .tmj (JSON) map ---
+
+let tileSize = 16;
+let mapWidth, mapHeight;
+let tileset, mapData;
+
+async function loadMap() {
+  const res = await fetch("tutoriallevel.tmj"); // <--- map file
+  const map = await res.json();
+
+  mapWidth = map.width;
+  mapHeight = map.height;
+
+  const ts = new Image();
+  ts.src = "tileset_1bit.png"; // <--- tileset image
+  await new Promise(r => ts.onload = r);
+
+  tileset = ts;
+  mapData = map.layers[0].data; // assumes first layer is your tile layer
+}
+
+function drawMap(ctx, cameraX) {
+  if (!mapData) return;
+
+  for (let row = 0; row < mapHeight; row++) {
+    for (let col = 0; col < mapWidth; col++) {
+      const tile = mapData[row * mapWidth + col];
+      if (tile > 0) {
+        const sx = ((tile - 1) % 8) * tileSize; // assumes 8 tiles per row in tileset
+        const sy = Math.floor((tile - 1) / 8) * tileSize;
+        ctx.drawImage(tileset, sx, sy, tileSize, tileSize,
+          col * tileSize - cameraX, row * tileSize, tileSize, tileSize);
+      }
+    }
+  }
+}
+
 
 //Player
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
