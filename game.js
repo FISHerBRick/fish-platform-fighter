@@ -81,8 +81,27 @@ function update() {
   // 5️⃣ Keep player in world bounds
   if (player.x < 0) player.x = 0;
 
-  // 6️⃣ Enemy logic (move + collide)
-  // ...
+ // Enemy chase logic (world coordinates)
+const distanceX = player.x - enemy.x;
+const distanceY = player.y - enemy.y;
+const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+// Enemy only chases if player is within 200px
+if (distance < 200) {
+  enemy.x += Math.sign(distanceX) * enemy.speed;
+  enemy.y += Math.sign(distanceY) * enemy.speed;
+}
+
+// Enemy collide with player
+if (
+  player.x < enemy.x + enemy.w &&
+  player.x + player.w > enemy.x &&
+  player.y < enemy.y + enemy.h &&
+  player.y + player.h > enemy.y
+) {
+  gameOver = true;
+}
+
 
   // 7️⃣ 📸 CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
