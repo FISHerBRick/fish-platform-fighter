@@ -1,5 +1,7 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+let cameraX = 0;
+
 
 //Player
 const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false };
