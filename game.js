@@ -38,9 +38,10 @@ function resetGame() {
   gameOver = false;
 
   //Reset enemy position
-enemy.x = 600;
-enemy.y = 320;
-enemy.triggered = false; // ✅ reset chase trigger
+  enemy.x = 600;
+  enemy.y = 320;
+  enemy.triggered = false; // reset chase trigger
+} // <- THIS CLOSING BRACE WAS MISSING
 
 
 //Update Loop
