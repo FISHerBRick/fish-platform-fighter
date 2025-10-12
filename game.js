@@ -47,19 +47,17 @@ function update() {
   }
 
  // Movement
-let moveSpeed = 5;
-let nextX = player.x;
-let nextY = player.y + player.dy;
-  
- if (keys["d"]) player.x += 5;
-  if (keys["a"]) player.x -= 5;
+if (keys["d"]) player.x += 5;
+if (keys["a"]) player.x -= 5;
+
   if (keys["w"] && player.grounded) {
     player.dy = jumpPower;
     player.grounded = false;
-
-  // Gravity
- player.dy += gravity;
-nextY = player.y + player.dy;
+  }
+  
+// Gravity
+player.dy += gravity;
+player.y += player.dy;
 
   // Collision
   player.grounded = false;
@@ -95,7 +93,6 @@ nextY = player.y + player.dy;
   ) {
     gameOver = true;
   }
-}
 
   //Score
   score++;
