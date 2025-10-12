@@ -16,6 +16,16 @@ platforms.push(
   { x: 1300, y: 150, w: 100, h: 10 },
 );
 
+const platforms = [
+  { x: 0, y: 350, w: 800, h: 50 },   // original ground
+  { x: 800, y: 350, w: 800, h: 50 }, // new ground extension
+  { x: 200, y: 280, w: 100, h: 10 },
+  { x: 350, y: 220, w: 100, h: 10 },
+  { x: 500, y: 160, w: 100, h: 10 },
+  { x: 650, y: 200, w: 120, h: 10 },
+];
+
+
 
 //Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2 };
@@ -43,16 +53,16 @@ function resetGame() {
 
 //Update Loop
 function update() {
-  // 1️⃣ Clear the screen
+  // Clear the screen
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 2️⃣ Handle game over
+  // Handle game over
   if (gameOver) {
     // draw message etc.
     return;
   }
 
-  // 3️⃣ Player movement
+  // Player movement
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
   if (keys["w"] && player.grounded) {
@@ -60,7 +70,7 @@ function update() {
     player.grounded = false;
   }
 
-  // 4️⃣ Gravity + collision
+  // Gravity + collision
   player.dy += gravity;
   player.y += player.dy;
   player.grounded = false;
@@ -78,7 +88,7 @@ function update() {
     }
   }
 
-  // 5️⃣ Keep player in world bounds
+  // Keep player in world bounds
   if (player.x < 0) player.x = 0;
 
  // Enemy chase logic (world coordinates)
@@ -102,11 +112,11 @@ if (
   gameOver = true;
 }
 
-  // 7️⃣ 📸 CAMERA FOLLOW
+  // CAMERA FOLLOW
   cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
 
-  // 8️⃣ DRAW everything with camera offset
+  // DRAW everything with camera offset
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
