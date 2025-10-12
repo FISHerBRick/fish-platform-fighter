@@ -43,50 +43,33 @@ function resetGame() {
 
 //Update Loop
 function update() {
+  // 1️⃣ Clear the screen
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Camera follows player (centered)
-cameraX = player.x - canvas.width / 2 + player.w / 2;
 
-// Prevent camera from showing outside world (optional)
-if (cameraX < 0) cameraX = 0;
-
-
+  // 2️⃣ Handle game over
   if (gameOver) {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fff";
-    ctx.font = "28px monospace";
-    ctx.fillText("HAHA YOU LOST!", 250, 200);
-    ctx.font = "20px monospace";
-    ctx.fillText("Press R to Restart", 280, 240);
+    // draw message etc.
     return;
   }
 
-  // Player movement
+  // 3️⃣ Player movement
   if (keys["d"]) player.x += 5;
   if (keys["a"]) player.x -= 5;
-
-  // Prevent player from leaving screen
-  if (player.x < 0) player.x = 0;
-  if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
-
   if (keys["w"] && player.grounded) {
     player.dy = jumpPower;
     player.grounded = false;
   }
 
-  // Gravity
+  // 4️⃣ Gravity + collision
   player.dy += gravity;
   player.y += player.dy;
-
-  // Platform collision
   player.grounded = false;
+
   for (const p of platforms) {
     if (
       player.x < p.x + p.w &&
       player.x + player.w > p.x &&
-      player.y + player.h <= p.y &&
+      player.y + player.h < p.y + 10 &&
       player.y + player.h + player.dy >= p.y
     ) {
       player.y = p.y - player.h;
@@ -95,42 +78,28 @@ if (cameraX < 0) cameraX = 0;
     }
   }
 
-  // Enemy chase logic
-  const distanceX = player.x - enemy.x;
-  const distanceY = player.y - enemy.y;
-  const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+  // 5️⃣ Keep player in world bounds
+  if (player.x < 0) player.x = 0;
 
-  // Only chase if player is within 200px
-  if (distance < 200 && !gameOver) {
-    enemy.x += Math.sign(distanceX) * enemy.speed;
-    enemy.y += Math.sign(distanceY) * enemy.speed;
-  }
+  // 6️⃣ Enemy logic (move + collide)
+  // ...
 
-  // Prevent enemy from moving off the left side
-  if (enemy.x < 0) enemy.x = 0;
+  // 7️⃣ 📸 CAMERA FOLLOW
+  cameraX = player.x - canvas.width / 2 + player.w / 2;
+  if (cameraX < 0) cameraX = 0;
 
-  // Collision check (only if visible)
-  if (
-    player.x < enemy.x + enemy.w &&
-    player.x + player.w > enemy.x &&
-    player.y < enemy.y + enemy.h &&
-    player.y + player.h > enemy.y
-  ) {
-    gameOver = true;
-  }
-
-  // Score
-  score++;
-
-  // Draw
-  ctx.fillStyle = "#0f0";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+  // 8️⃣ DRAW everything with camera offset
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = "#888";
-  for (const p of platforms) ctx.fillRect(p.x, p.y, p.w, p.h);
+  for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
 
   ctx.fillStyle = "#f00";
-  ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+  ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
+
+  ctx.fillStyle = "#0f0";
+  ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
@@ -138,6 +107,7 @@ if (cameraX < 0) cameraX = 0;
 
   requestAnimationFrame(update);
 }
+
 
 
 //Start Game
