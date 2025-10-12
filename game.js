@@ -1,5 +1,6 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
 let cameraX = 0;
 
 // Player
@@ -10,7 +11,7 @@ const keys = {};
 
 // Platforms
 const platforms = [
-  { x: 0, y: 350, w: 800, h: 50 },   // original ground
+  { x: 0, y: 350, w: 800, h: 50 },
   { x: 700, y: 300, w: 100, h: 10 },
   { x: 900, y: 250, w: 100, h: 10 },
   { x: 1100, y: 200, w: 100, h: 10 },
@@ -20,14 +21,14 @@ const platforms = [
 // Enemy
 let enemy = { x: 600, y: 320, w: 30, h: 30, speed: 2, triggered: false };
 
-// Game State
+// Game state
 let score = 0;
 let gameOver = false;
 
-document.addEventListener("keydown", (e) => (keys[e.key] = true));
-document.addEventListener("keyup", (e) => (keys[e.key] = false));
+document.addEventListener("keydown", (e) => keys[e.key] = true);
+document.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// Reset Game
+// Reset game
 function resetGame() {
   player.x = 50;
   player.y = 300;
@@ -36,26 +37,24 @@ function resetGame() {
   score = 0;
   gameOver = false;
 
-  // Reset enemy
   enemy.x = 600;
   enemy.y = 320;
-  enemy.triggered = false; // ✅ properly reset
+  enemy.triggered = false;
 }
 
-// Update Loop
+// Restart listener
+document.addEventListener("keydown", (e) => {
+  if (e.key === "r" || e.key === "R") resetGame();
+});
+
+// Update loop
 function update() {
-  // Clear the screen
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Handle game over
   if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
-    ctx.fillText("HAHA YOU LOST!", 250, 200);
-    ctx.font = "20px monospace";
-    ctx.fillText("Press R to Restart", 280, 240);
+    ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
     return;
   }
 
@@ -85,40 +84,32 @@ function update() {
     }
   }
 
-  // Keep player in world bounds
   if (player.x < 0) player.x = 0;
 
-  // Enemy chase logic
-  const distanceX = player.x - enemy.x;
-  const distanceY = player.y - enemy.y;
-  const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+  // Enemy chase
+  const dx = player.x - enemy.x;
+  const dy = player.y - enemy.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
 
-  // Trigger enemy chase if player comes close
-  if (!enemy.triggered && distance < 300) {
-    enemy.triggered = true;
-  }
-
-  // Enemy keeps chasing once triggered
+  if (!enemy.triggered && dist < 300) enemy.triggered = true;
   if (enemy.triggered) {
-    enemy.x += Math.sign(distanceX) * enemy.speed;
-    enemy.y += Math.sign(distanceY) * enemy.speed;
+    enemy.x += Math.sign(dx) * enemy.speed;
+    enemy.y += Math.sign(dy) * enemy.speed;
   }
 
-  // Enemy collide with player
+  // Collision with player
   if (
     player.x < enemy.x + enemy.w &&
     player.x + player.w > enemy.x &&
     player.y < enemy.y + enemy.h &&
     player.y + player.h > enemy.y
-  ) {
-    gameOver = true;
-  }
+  ) gameOver = true;
 
-  // CAMERA FOLLOW
+  // Camera
   cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
 
-  // DRAW everything with camera offset
+  // Draw
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -138,10 +129,5 @@ function update() {
   requestAnimationFrame(update);
 }
 
-// Restart listener
-document.addEventListener("keydown", (e) => {
-  if (e.key === "r" || e.key === "R") resetGame();
-});
-
-// Start Game
+// Start game
 update();
