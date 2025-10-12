@@ -20,6 +20,7 @@ const platforms = [
 
 // Enemy
 let enemy = {
+  spawnX: 600,
   x: 600,
   y: 320,
   w: 30,
@@ -30,6 +31,7 @@ let enemy = {
   jumpPower: -10,
   grounded: false,
   triggered: false
+  patrolDir: 1
 };
 
 // Game state
@@ -123,12 +125,12 @@ function update() {
 
   if (!enemy.triggered && dist < 300) enemy.triggered = true;
   
-  if (enemy.triggered) {
+if (enemy.triggered) {
     // Chase player
     enemy.x += Math.sign(dx) * enemy.speed;
 
     // Jump if player is above and close
-    if (enemy.grounded && dy < -40 && Math.abs(dx) < 150) {
+  if (enemy.grounded && dy < -40 && Math.abs(dx) < 150) {
       enemy.dy = enemy.jumpPower;
       enemy.grounded = false;
   }
