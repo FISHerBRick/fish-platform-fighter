@@ -4,8 +4,17 @@ const ctx = canvas.getContext("2d");
 let cameraX = 0;
 
 // Player
-const player = { x: 50, y: 300, w: 30, h: 30, dy: 0, grounded: false attacking: true, 
-  attackCooldown: 0 };
+const player = { 
+  x: 50, 
+  y: 300, 
+  w: 30, 
+  h: 30, 
+  dy: 0, 
+  grounded: false, 
+  attacking: false, 
+  attackCooldown: 0 
+  facingRight: true
+};
 const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
@@ -72,22 +81,30 @@ function update() {
     return;
   }
 
-  // Player movement
-  if (keys["d"]) player.x += 5;
-  if (keys["a"]) player.x -= 5;
-  if (keys["w"] && player.grounded) {
-    player.dy = jumpPower;
-    player.grounded = false;
-  }
+// Player movement + facing direction
+if (keys["d"]) {
+  player.x += 5;
+  player.facingRight = true;
+}
+if (keys["a"]) {
+  player.x -= 5;
+  player.facingRight = false;
+}
+if (keys["w"] && player.grounded) {
+  player.dy = jumpPower;
+  player.grounded = false;
+}
+
 
   // Attack input
 if (keys["k"] && player.attackCooldown <= 0) {
   player.attacking = true;
   player.attackCooldown = 30; // ~0.5s cooldown (30 frames)
   setTimeout(() => player.attacking = false, 200); // Attack lasts 200ms
-} else {
+} else if (player.attackCooldown > 0) {
   player.attackCooldown--;
 }
+
 
 
   // Gravity + collision
@@ -164,7 +181,7 @@ if (enemy.triggered) {
 // Player attack hits enemy
 if (player.attacking) {
   const attackRange = 50; // pixels
-  const facingRight = keys["d"] || (!keys["a"] && enemy.x > player.x);
+  const facingRight = player.facingRight;
 
   const attackBox = {
     x: facingRight ? player.x + player.w : player.x - attackRange,
