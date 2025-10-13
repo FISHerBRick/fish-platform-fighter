@@ -67,7 +67,7 @@ function resetGame() {
 
 // Restart listener
 document.addEventListener("keydown", (e) => {
-  if (e.key === "r" || e.key === "r") resetGame();
+  if (e.key === "r" || e.key === "R") resetGame();
 });
 
 // Update loop
@@ -97,7 +97,7 @@ if (keys["w"] && player.grounded) {
 
 
   // Attack input
-if (keys["k"] && player.attackCooldown <= 0) {
+if (keys["e"] && player.attackCooldown <= 0) {
   player.attacking = true;
   player.attackCooldown = 30; // ~0.5s cooldown (30 frames)
   setTimeout(() => player.attacking = false, 200); // Attack lasts 200ms
