@@ -12,8 +12,8 @@ const player = {
   dy: 0, 
   grounded: false, 
   attacking: false, 
-  attackCooldown: 0 
-  facingRight: true
+  attackCooldown: 0,
+  facingRight: true,
 };
 const gravity = 0.6;
 const jumpPower = -12;
