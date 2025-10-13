@@ -67,7 +67,7 @@ function resetGame() {
 
 // Restart listener
 document.addEventListener("keydown", (e) => {
-  if (e.key === "r" || e.key === "R") resetGame();
+  if (e.key === "r" || e.key === "r") resetGame();
 });
 
 // Update loop
