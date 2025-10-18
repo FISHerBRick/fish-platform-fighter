@@ -78,6 +78,8 @@ function update() {
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
     ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
+
+    requestAnimationFrame(update);
     return;
   }
 
