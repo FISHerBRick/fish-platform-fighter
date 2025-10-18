@@ -2,6 +2,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 let cameraX = 0;
+let hitParticles=[];
 
 // Player
 const player = { 
@@ -200,6 +201,19 @@ if (player.attacking) {
   ) {
     // Enemy "killed"
     score += 100;
+
+    //Generate hit particles
+    for (let i = 0; i < 10; i++) { // 10 particles
+      hitParticles.push({
+        x: enemy.x + enemy.w/2,
+        y: enemy.y + enemy.h/2,
+        dx: (Math.random() - 0.5) * 4, //random horizontal velocity
+        dy:(Math.random() - 0.5) * 4, //random vertical velocity
+        size: Math.random() * 5 + 2, //random size
+        life: 20 + Math.random() * 10 //lifespan in frames
+      });
+    }
+    
     // Respawn enemy elsewhere
     enemy.x = enemy.spawnX;
     enemy.y = 320;
@@ -233,6 +247,21 @@ ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
   ctx.fillStyle = "#fff";
   ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
+
+  // Draw hit particles
+for (let i = hitParticles.length - 1; i >= 0; i--) {
+  const p = hitParticles[i];
+  ctx.fillStyle = "yellow";
+  ctx.fillRect(p.x - cameraX, p.y, p.size, p.size);
+
+  // Move particle
+  p.x += p.dx;
+  p.y += p.dy;
+  p.life--;
+
+  // Remove dead particle
+  if (p.life <= 0) hitParticles.splice(i, 1);
+}
 
   requestAnimationFrame(update);
 }
