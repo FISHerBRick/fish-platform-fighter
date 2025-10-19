@@ -85,9 +85,7 @@ function update() {
   let moving = false;
 
   // --- Player Movement ---
-const playerSpeed = -2; // much slower, smooth movement
-// --- Player Movement ---
-let moveCounter = (moveCounter || 0) + 1;  // initialize if undefined
+const playerSpeed = -5; // much slower, smooth movement
 
 if(keys["d"]) {
   if(moveCounter % 3 === 0){  // move only once every 3 frames
