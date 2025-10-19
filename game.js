@@ -14,7 +14,7 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 
 // --- Player ---
 const player = { 
-  x: 50, y: 300, width: 60, height: 60, dy: 0,
+  x: 50, y: 300, width: 100, height: 100, dy: 0,  // bigger so you can see the sprite
   grounded: false, attacking: false, attackCooldown: 0, facingRight: true
 };
 const gravity = 0.6;
@@ -52,7 +52,7 @@ function resetGame() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if(gameOver) {
+  if(gameOver){
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
     ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
@@ -86,12 +86,6 @@ function update() {
   }
   if(player.x < 0) player.x = 0;
 
-  // --- Attack ---
-  if(keys["e"] && player.attackCooldown <= 0){
-    player.attacking = true; player.attackCooldown = 30;
-    setTimeout(() => player.attacking = false, 200);
-  } else if(player.attackCooldown > 0){ player.attackCooldown--; }
-
   // --- Enemy Physics ---
   enemy.dy += enemy.gravity;
   enemy.y += enemy.dy; enemy.grounded = false;
@@ -108,7 +102,6 @@ function update() {
   const dy = player.y - enemy.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   if(!enemy.triggered && dist < 300) enemy.triggered = true;
-
   if(enemy.triggered){
     enemy.x += Math.sign(dx) * enemy.speed;
     if(enemy.grounded && dy < -40 && Math.abs(dx) < 150){ enemy.dy = enemy.jumpPower; enemy.grounded = false; }
@@ -124,29 +117,6 @@ function update() {
     gameOver = true;
   }
 
-  // --- Player Attack Hits Enemy ---
-  if(player.attacking){
-    const attackRange = 50;
-    const facingRight = player.facingRight;
-    const attackBox = { x: facingRight ? player.x + player.width : player.x - attackRange, y: player.y, w: attackRange, h: player.height };
-
-    if(attackBox.x < enemy.x + enemy.w && attackBox.x + attackBox.w > enemy.x &&
-       attackBox.y < enemy.y + enemy.h && attackBox.y + attackBox.h > enemy.y){
-      score += 100;
-      for(let i=0;i<10;i++){ // particles
-        hitParticles.push({
-          x: enemy.x + enemy.w/2, y: enemy.y + enemy.h/2,
-          dx: (Math.random()-0.5)*4, dy:(Math.random()-0.5)*4,
-          size: Math.random()*5+2, life: 20 + Math.random()*10
-        });
-      }
-      enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false;
-    }
-
-    ctx.fillStyle = "rgba(0,255,0,0.3)";
-    ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
-  }
-
   // --- Camera ---
   cameraX = player.x - canvas.width/2 + player.width/2;
   if(cameraX < 0) cameraX = 0;
@@ -156,7 +126,7 @@ function update() {
   ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
   ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  // Draw player sprite correctly
+  // Draw player
   const sprite = currentFrames[currentFrame];
   ctx.save();
   ctx.translate(player.x - cameraX + player.width/2, player.y + player.height/2);
@@ -167,15 +137,6 @@ function update() {
   // HUD
   ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`,20,30);
-
-  // --- Particles ---
-  for(let i=hitParticles.length-1;i>=0;i--){
-    const p = hitParticles[i];
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(p.x - cameraX, p.y, p.size, p.size);
-    p.x += p.dx; p.y += p.dy; p.life--;
-    if(p.life <= 0) hitParticles.splice(i,1);
-  }
 
   requestAnimationFrame(update);
 }
@@ -188,4 +149,3 @@ let imagesLoaded = 0;
     if(imagesLoaded===3) update();
   }
 });
-
