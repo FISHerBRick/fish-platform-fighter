@@ -21,8 +21,11 @@ const player = {
   attackCooldown: 0,
   facingRight: true
 };
-const gravity = 0.4;  // slower fall
-const jumpPower = -8; // lower jump speed
+// --- Physics ---
+const playerSpeed = 0.8;   // slow down horizontal movement drastically
+const gravity = 0.4;       // slower falling
+const jumpPower = -8;      // lower jump height
+
 
 // --- Enemy ---
 let enemy = {
@@ -82,10 +85,12 @@ function update() {
   let moving = false;
 
   // --- Player Movement ---
-const playerSpeed = 1.5; // much slower, smooth movement
+const playerSpeed = -2; // much slower, smooth movement
+// Player Movement
 if(keys["d"]) { player.x += playerSpeed; player.facingRight = true; moving = true; }
 if(keys["a"]) { player.x -= playerSpeed; player.facingRight = false; moving = true; }
 if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+
 
   // --- Animation ---
   currentFrames = player.grounded ? walkFrames : [jumpFrame];
