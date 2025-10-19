@@ -132,15 +132,6 @@ for(const p of platforms){
 player.y = nextY;
 
 // keep player inside canvas
-if(player.y + player.height > canvas.height){
-  player.y = platforms[0].y - player.height;
-  player.dy = 0;
-  player.grounded = true;
-}
-if(player.x < 0) player.x = 0;
-
-
-
   if(player.y + player.height > canvas.height){
     player.y = platforms[0].y - player.height;
     player.dy = 0;
