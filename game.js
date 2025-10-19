@@ -1,116 +1,195 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Player images
-const walkFrames = [new Image(), new Image()];
-walkFrames[0].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
-walkFrames[1].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
+// --- Sprites ---
+const walkFrames = [
+  new Image(),
+  new Image()
+];
+walkFrames[0].src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
+walkFrames[1].src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
 
 const jumpFrame = new Image();
-jumpFrame.src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174930__2_-removebg-preview.png";
+jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174930__2_-removebg-preview.png";
 
-// Player
-const player = {
-  x: 100,
-  y: 300,
-  w: 50,
-  h: 50,
-  dy: 0,
-  grounded: false,
-  facingRight: true
+// --- Player ---
+const player = { 
+  x: 50, y: 300, w: 30, h: 30, dy: 0,
+  grounded: false, attacking: false, attackCooldown: 0, facingRight: true
 };
-
-// Physics
 const gravity = 0.6;
 const jumpPower = -12;
-const keys = {};
 
-// Platforms
+// --- Enemy ---
+let enemy = {
+  spawnX: 600, x: 600, y: 320, w: 30, h: 30,
+  dy: 0, speed: 2, gravity: 0.6, jumpPower: -10,
+  grounded: false, triggered: false, patrolDir: 1
+};
+
+// --- Platforms ---
 const platforms = [
   { x: 0, y: 350, w: 800, h: 50 },
-  { x: 700, y: 300, w: 100, h: 10 }
+  { x: 700, y: 300, w: 100, h: 10 },
+  { x: 900, y: 250, w: 100, h: 10 },
+  { x: 1100, y: 200, w: 100, h: 10 },
+  { x: 1300, y: 150, w: 100, h: 10 }
 ];
 
-// Animation
-let currentFrame = 0;
-let frameCount = 0;
-const frameSpeed = 10;
-let currentFrames = walkFrames;
+// --- Game State ---
+let keys = {}, currentFrame = 0, frameCount = 0, frameSpeed = 10, currentFrames = walkFrames;
+let cameraX = 0, score = 0, gameOver = false, hitParticles = [];
 
-// Camera
-let cameraX = 0;
-
-// Key listeners
+// --- Key Listeners ---
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
+document.addEventListener("keydown", e => { if(e.key.toLowerCase() === "r") resetGame(); });
 
-// Game loop
+// --- Reset Game ---
+function resetGame() {
+  player.x = 50; player.y = 300; player.dy = 0; player.grounded = false; score = 0; gameOver = false;
+  enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false; enemy.grounded = false;
+  hitParticles = [];
+}
+
+// --- Update Loop ---
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Player movement
-  let moving = false;
-  if (keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
-  if (keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
-  if (keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+  if(gameOver) {
+    ctx.fillStyle = "#fff";
+    ctx.font = "28px monospace";
+    ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
+    requestAnimationFrame(update);
+    return;
+  }
 
-  // Gravity
+  let moving = false;
+
+  // --- Player Movement ---
+  if(keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
+  if(keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
+  if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+
+  // --- Choose Animation Frames ---
+  currentFrames = player.grounded ? walkFrames : [jumpFrame];
+  if(moving && player.grounded){
+    frameCount++;
+    if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
+  } else if(player.grounded){ currentFrame = 0; }
+
+  // --- Gravity & Collision ---
   player.dy += gravity;
   player.y += player.dy;
   player.grounded = false;
+  for(const p of platforms){
+    if(player.x < p.x + p.w && player.x + player.w > p.x &&
+       player.y + player.h < p.y + 10 && player.y + player.h + player.dy >= p.y){
+      player.y = p.y - player.h; player.dy = 0; player.grounded = true;
+    }
+  }
+  if(player.x < 0) player.x = 0;
 
-  // Platform collision
-  for (const p of platforms) {
-    if (
-      player.x < p.x + p.w &&
-      player.x + player.w > p.x &&
-      player.y + player.h < p.y + 10 &&
-      player.y + player.h + player.dy >= p.y
-    ) {
-      player.y = p.y - player.h;
-      player.dy = 0;
-      player.grounded = true;
+  // --- Attack ---
+  if(keys["e"] && player.attackCooldown <= 0){
+    player.attacking = true; player.attackCooldown = 30;
+    setTimeout(() => player.attacking = false, 200);
+  } else if(player.attackCooldown > 0){ player.attackCooldown--; }
+
+  // --- Enemy Physics ---
+  enemy.dy += enemy.gravity;
+  enemy.y += enemy.dy; enemy.grounded = false;
+
+  for(const p of platforms){
+    if(enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
+       enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y){
+      enemy.y = p.y - enemy.h; enemy.dy = 0; enemy.grounded = true;
     }
   }
 
-  // Update animation
-  currentFrames = player.grounded ? walkFrames : [jumpFrame];
-  if (moving && player.grounded) {
-    frameCount++;
-    if (frameCount >= frameSpeed) {
-      currentFrame = (currentFrame + 1) % currentFrames.length;
-      frameCount = 0;
+  // --- Enemy AI ---
+  const dx = player.x - enemy.x;
+  const dy = player.y - enemy.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if(!enemy.triggered && dist < 300) enemy.triggered = true;
+
+  if(enemy.triggered){
+    enemy.x += Math.sign(dx) * enemy.speed;
+    if(enemy.grounded && dy < -40 && Math.abs(dx) < 150){ enemy.dy = enemy.jumpPower; enemy.grounded = false; }
+  } else {
+    enemy.x += enemy.patrolDir * 1;
+    if(enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
+    if(enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
+  }
+
+  // --- Player-Enemy Collision ---
+  if(player.x < enemy.x + enemy.w && player.x + player.w > enemy.x &&
+     player.y < enemy.y + enemy.h && player.y + player.h > enemy.y){
+    gameOver = true;
+  }
+
+  // --- Player Attack Hits Enemy ---
+  if(player.attacking){
+    const attackRange = 50;
+    const facingRight = player.facingRight;
+    const attackBox = { x: facingRight ? player.x + player.w : player.x - attackRange, y: player.y, w: attackRange, h: player.h };
+
+    if(attackBox.x < enemy.x + enemy.w && attackBox.x + attackBox.w > enemy.x &&
+       attackBox.y < enemy.y + enemy.h && attackBox.y + attackBox.h > enemy.y){
+      score += 100;
+      for(let i=0;i<10;i++){ // particles
+        hitParticles.push({
+          x: enemy.x + enemy.w/2, y: enemy.y + enemy.h/2,
+          dx: (Math.random()-0.5)*4, dy:(Math.random()-0.5)*4,
+          size: Math.random()*5+2, life: 20 + Math.random()*10
+        });
+      }
+      enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false;
     }
-  } else if (player.grounded) currentFrame = 0;
 
-  // Camera
-  cameraX = player.x - canvas.width / 2 + player.w / 2;
-  if (cameraX < 0) cameraX = 0;
+    // Optional debug box
+    ctx.fillStyle = "rgba(0,255,0,0.3)";
+    ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
+  }
 
-  // Draw background
-  ctx.fillStyle = "#111";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // --- Camera ---
+  cameraX = player.x - canvas.width/2 + player.w/2;
+  if(cameraX < 0) cameraX = 0;
 
-  // Draw platforms
-  ctx.fillStyle = "#888";
-  for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
+  // --- Draw ---
+  ctx.fillStyle = "#111"; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // Draw player
+  ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
+
+  ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
+
   const sprite = currentFrames[currentFrame];
   ctx.save();
   ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
-  ctx.scale(player.facingRight ? 1 : -1, 1);
+  ctx.scale(player.facingRight?1:-1,1);
   ctx.drawImage(sprite, -player.w/2, -player.h/2, player.w, player.h);
   ctx.restore();
+
+  ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
+  ctx.fillText(`Score: ${score}`,20,30);
+
+  // --- Particles ---
+  for(let i=hitParticles.length-1;i>=0;i--){
+    const p = hitParticles[i];
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(p.x - cameraX, p.y, p.size, p.size);
+    p.x += p.dx; p.y += p.dy; p.life--;
+    if(p.life <= 0) hitParticles.splice(i,1);
+  }
 
   requestAnimationFrame(update);
 }
 
-// Wait for images to load
+// --- Start after images load ---
 let imagesLoaded = 0;
-[...walkFrames, jumpFrame].forEach(img => {
+[...walkFrames,jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
-    if (imagesLoaded === 3) update();
+    if(imagesLoaded===3) update();
   }
 });
