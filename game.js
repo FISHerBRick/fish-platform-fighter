@@ -86,12 +86,12 @@ function update() {
 
 // --- Player Movement ---
 if(keys["d"]) {
-  player.x += playerSpeed;
+  player.x += 5; // smooth speed
   player.facingRight = true;
   moving = true;
 }
 if(keys["a"]) {
-  player.x -= playerSpeed;
+  player.x -= 5;
   player.facingRight = false;
   moving = true;
 }
@@ -100,37 +100,45 @@ if(keys["w"] && player.grounded) {
   player.grounded = false;
 }
 
-  // --- Animation ---
-  currentFrames = player.grounded ? walkFrames : [jumpFrame];
-  if(moving && player.grounded){
-    frameCount++;
-    if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
-  } else if(player.grounded){ currentFrame = 0; }
+// --- Animation ---
+currentFrames = player.grounded ? walkFrames : [jumpFrame];
+if(moving && player.grounded){
+  frameCount++;
+  if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
+} else if(player.grounded){ currentFrame = 0; }
 
-  // --- Gravity ---
-  player.dy += gravity;
-  player.y += player.dy;
- // vertical movement step
+// --- Gravity & Collision ---
+player.dy += gravity;
 player.grounded = false;
+
 let nextY = player.y + player.dy;
+
 for(const p of platforms){
   const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
   if(withinX){
-    // player moving down
+    // falling down
     if(player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y){
       nextY = p.y - player.height;
       player.dy = 0;
       player.grounded = true;
     }
-    // player moving up (ceiling collision)
+    // moving up (hit ceiling)
     if(player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h){
       nextY = p.y + p.h;
       player.dy = 0;
     }
   }
 }
-
 player.y = nextY;
+
+// keep player inside canvas
+if(player.y + player.height > canvas.height){
+  player.y = platforms[0].y - player.height;
+  player.dy = 0;
+  player.grounded = true;
+}
+if(player.x < 0) player.x = 0;
+
 
 
   if(player.y + player.height > canvas.height){
