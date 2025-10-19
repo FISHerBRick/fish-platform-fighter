@@ -6,12 +6,13 @@ const walkFrames = [
   new Image(),
   new Image()
 ];
-walkFrames[0].src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174912__2_-removebg-preview.png";
-walkFrames[1].src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174923__2_-removebg-preview.png";
+walkFrames[0].src = "https://raw.githubusercontent.com/kocho4671-jpg/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
+walkFrames[1].src = "https://raw.githubusercontent.com/kocho4671-jpg/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
+
 
 // Jump sprite
 const jumpFrame = new Image();
-jumpFrame.src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174930__2_-removebg-preview.png";
+jumpFrame.src = "https://raw.githubusercontent.com/kocho4671-jpg/fish-platform-fighter/main/Untitled9_20251019174930__2_-removebg-preview.png";
 
 // Animation variables
 let currentFrame = 0;
