@@ -1,6 +1,24 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+// Walk sprites
+const walkFrames = [
+  new Image(),
+  new Image()
+];
+walkFrames[0].src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174912__2_-removebg-preview.png";
+walkFrames[1].src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174923__2_-removebg-preview.png";
+
+// Jump sprite
+const jumpFrame = new Image();
+jumpFrame.src = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Untitled9_20251019174930__2_-removebg-preview.png";
+
+// Animation variables
+let currentFrame = 0;
+let frameCount = 0;
+const frameSpeed = 10;
+
+
 let cameraX = 0;
 let hitParticles=[];
 
@@ -84,19 +102,27 @@ function update() {
     return;
   }
 
-// Player movement + facing direction
-if (keys["d"]) {
-  player.x += 5;
-  player.facingRight = true;
+let moving = false;
+
+// Player movement
+if (keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
+if (keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
+if (keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+
+// Decide which frame to show
+let currentFrames = player.grounded ? walkFrames : [jumpFrame];
+
+// Animate walking frames if moving and on ground
+if (moving && player.grounded) {
+  frameCount++;
+  if (frameCount >= frameSpeed) {
+    currentFrame = (currentFrame + 1) % currentFrames.length;
+    frameCount = 0;
+  }
+} else if (player.grounded) {
+  currentFrame = 0; // idle frame
 }
-if (keys["a"]) {
-  player.x -= 5;
-  player.facingRight = false;
-}
-if (keys["w"] && player.grounded) {
-  player.dy = jumpPower;
-  player.grounded = false;
-}
+
 
 
   // Attack input
@@ -240,8 +266,13 @@ if (player.attacking) {
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  ctx.fillStyle = "#0f0";
-ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
+ const sprite = currentFrames[currentFrame];
+
+ctx.save();
+ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
+ctx.scale(player.facingRight ? 1 : -1, 1);
+ctx.drawImage(sprite, -player.w/2, -player.h/2, player.w, player.h);
+ctx.restore();
 
 
   ctx.fillStyle = "#fff";
