@@ -85,16 +85,24 @@ function update() {
   let moving = false;
 
 // --- Player Movement ---
+const step = 1; // move 1px at a time
 if(keys["d"]) {
-  player.x += 5; // smooth speed
+  for(let i=0; i<5; i++){ // move in small increments
+    player.x += step;
+    // check collisions with platforms here if you want
+  }
   player.facingRight = true;
   moving = true;
 }
 if(keys["a"]) {
-  player.x -= 5;
+  for(let i=0; i<5; i++){
+    player.x -= step;
+    // check collisions with platforms here if you want
+  }
   player.facingRight = false;
   moving = true;
 }
+
 if(keys["w"] && player.grounded) {
   player.dy = jumpPower;
   player.grounded = false;
