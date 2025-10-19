@@ -82,7 +82,7 @@ function update() {
   let moving = false;
 
   // --- Player Movement ---
- const playerSpeed = 3; // slower
+const playerSpeed = 1.5; // much slower, smooth movement
 if(keys["d"]) { player.x += playerSpeed; player.facingRight = true; moving = true; }
 if(keys["a"]) { player.x -= playerSpeed; player.facingRight = false; moving = true; }
 if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
