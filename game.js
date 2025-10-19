@@ -109,8 +109,8 @@ if (keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
 if (keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
 if (keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
 
-// Decide which frame to show
-let currentFrames = player.grounded ? walkFrames : [jumpFrame];
+// Update which animation frames to use
+currentFrames = player.grounded ? walkFrames : [jumpFrame];
 
 // Animate walking frames if moving and on ground
 if (moving && player.grounded) {
