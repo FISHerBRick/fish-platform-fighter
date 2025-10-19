@@ -82,9 +82,10 @@ function update() {
   let moving = false;
 
   // --- Player Movement ---
-  if(keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
-  if(keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
-  if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+ const playerSpeed = 3; // slower
+if(keys["d"]) { player.x += playerSpeed; player.facingRight = true; moving = true; }
+if(keys["a"]) { player.x -= playerSpeed; player.facingRight = false; moving = true; }
+if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
 
   // --- Animation ---
   currentFrames = player.grounded ? walkFrames : [jumpFrame];
@@ -96,17 +97,28 @@ function update() {
   // --- Gravity ---
   player.dy += gravity;
   player.y += player.dy;
-  player.grounded = false;
-
-  // --- Collision with platforms ---
-  for(const p of platforms){
-    const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
-    if(withinX && player.y + player.height >= p.y && player.y + player.height <= p.y + player.dy + gravity + 1){
-      player.y = p.y - player.height;
+ // vertical movement step
+player.grounded = false;
+let nextY = player.y + player.dy;
+for(const p of platforms){
+  const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
+  if(withinX){
+    // player moving down
+    if(player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y){
+      nextY = p.y - player.height;
       player.dy = 0;
       player.grounded = true;
     }
+    // player moving up (ceiling collision)
+    if(player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h){
+      nextY = p.y + p.h;
+      player.dy = 0;
+    }
   }
+}
+
+player.y = nextY;
+
 
   if(player.y + player.height > canvas.height){
     player.y = platforms[0].y - player.height;
