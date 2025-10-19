@@ -14,18 +14,14 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 
 // --- Player ---
 const player = { 
-  x: 50, y: 300, w: 30, h: 30, dy: 0,
+  x: 50, y: 300, width: 60, height: 60, dy: 0,
   grounded: false, attacking: false, attackCooldown: 0, facingRight: true
 };
 const gravity = 0.6;
 const jumpPower = -12;
 
 // --- Enemy ---
-let enemy = {
-  spawnX: 600, x: 600, y: 320, w: 30, h: 30,
-  dy: 0, speed: 2, gravity: 0.6, jumpPower: -10,
-  grounded: false, triggered: false, patrolDir: 1
-};
+let enemy = { spawnX: 600, x: 600, y: 320, w: 30, h: 30, dy: 0, speed: 2, gravity: 0.6, jumpPower: -10, grounded: false, triggered: false, patrolDir: 1 };
 
 // --- Platforms ---
 const platforms = [
@@ -83,9 +79,9 @@ function update() {
   player.y += player.dy;
   player.grounded = false;
   for(const p of platforms){
-    if(player.x < p.x + p.w && player.x + player.w > p.x &&
-       player.y + player.h < p.y + 10 && player.y + player.h + player.dy >= p.y){
-      player.y = p.y - player.h; player.dy = 0; player.grounded = true;
+    if(player.x < p.x + p.w && player.x + player.width > p.x &&
+       player.y + player.height < p.y + 10 && player.y + player.height + player.dy >= p.y){
+      player.y = p.y - player.height; player.dy = 0; player.grounded = true;
     }
   }
   if(player.x < 0) player.x = 0;
@@ -123,8 +119,8 @@ function update() {
   }
 
   // --- Player-Enemy Collision ---
-  if(player.x < enemy.x + enemy.w && player.x + player.w > enemy.x &&
-     player.y < enemy.y + enemy.h && player.y + player.h > enemy.y){
+  if(player.x < enemy.x + enemy.w && player.x + player.width > enemy.x &&
+     player.y < enemy.y + enemy.h && player.y + player.height > enemy.y){
     gameOver = true;
   }
 
@@ -132,7 +128,7 @@ function update() {
   if(player.attacking){
     const attackRange = 50;
     const facingRight = player.facingRight;
-    const attackBox = { x: facingRight ? player.x + player.w : player.x - attackRange, y: player.y, w: attackRange, h: player.h };
+    const attackBox = { x: facingRight ? player.x + player.width : player.x - attackRange, y: player.y, w: attackRange, h: player.height };
 
     if(attackBox.x < enemy.x + enemy.w && attackBox.x + attackBox.w > enemy.x &&
        attackBox.y < enemy.y + enemy.h && attackBox.y + attackBox.h > enemy.y){
@@ -147,29 +143,28 @@ function update() {
       enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false;
     }
 
-    // Optional debug box
     ctx.fillStyle = "rgba(0,255,0,0.3)";
     ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
   }
 
   // --- Camera ---
-  cameraX = player.x - canvas.width/2 + player.w/2;
+  cameraX = player.x - canvas.width/2 + player.width/2;
   if(cameraX < 0) cameraX = 0;
 
   // --- Draw ---
   ctx.fillStyle = "#111"; ctx.fillRect(0,0,canvas.width,canvas.height);
-
   ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
-
   ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
+  // Draw player sprite correctly
   const sprite = currentFrames[currentFrame];
   ctx.save();
-  ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
+  ctx.translate(player.x - cameraX + player.width/2, player.y + player.height/2);
   ctx.scale(player.facingRight?1:-1,1);
-  ctx.drawImage(sprite, -player.w/2, -player.h/2, player.w, player.h);
+  ctx.drawImage(sprite, -player.width/2, -player.height/2, player.width, player.height);
   ctx.restore();
 
+  // HUD
   ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`,20,30);
 
@@ -193,3 +188,4 @@ let imagesLoaded = 0;
     if(imagesLoaded===3) update();
   }
 });
+
