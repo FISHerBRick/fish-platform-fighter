@@ -84,24 +84,21 @@ function update() {
 
   let moving = false;
 
-  // --- Player Movement ---
-const playerSpeed = -5; // much slower, smooth movement
-
+// --- Player Movement ---
 if(keys["d"]) {
-  if(moveCounter % 3 === 0){  // move only once every 3 frames
-    player.x += playerSpeed;
-    player.facingRight = true;
-    moving = true;
-  }
+  player.x += playerSpeed;
+  player.facingRight = true;
+  moving = true;
 }
 if(keys["a"]) {
-  if(moveCounter % 3 === 0){
-    player.x -= playerSpeed;
-    player.facingRight = false;
-    moving = true;
-  }
+  player.x -= playerSpeed;
+  player.facingRight = false;
+  moving = true;
 }
-if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
+if(keys["w"] && player.grounded) {
+  player.dy = jumpPower;
+  player.grounded = false;
+}
 
   // --- Animation ---
   currentFrames = player.grounded ? walkFrames : [jumpFrame];
