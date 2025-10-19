@@ -87,18 +87,12 @@ function update() {
 // --- Player Movement ---
 const step = 1; // move 1px at a time
 if(keys["d"]) {
-  for(let i=0; i<5; i++){ // move in small increments
-    player.x += step;
-    // check collisions with platforms here if you want
-  }
+  player.x += 0.8; // slower speed
   player.facingRight = true;
   moving = true;
 }
 if(keys["a"]) {
-  for(let i=0; i<5; i++){
-    player.x -= step;
-    // check collisions with platforms here if you want
-  }
+  player.x -= 0.8;
   player.facingRight = false;
   moving = true;
 }
