@@ -7,7 +7,7 @@ const walkFrames = [
   new Image()
 ];
 walkFrames[0].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
-walkFrames[1].src = "https://raw.githubusercontent.com/kocho4671-jpgFISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
+walkFrames[1].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
 
 
 // Jump sprite
