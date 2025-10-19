@@ -14,7 +14,7 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 
 // --- Player ---
 const player = { 
-  x: 50, y: 300, width: 100, height: 100, dy: 0,  // bigger so you can see the sprite
+  x: 50, y: 300, width: 100, height: 100, dy: 0,
   grounded: false, attacking: false, attackCooldown: 0, facingRight: true
 };
 const gravity = 0.6;
@@ -126,7 +126,10 @@ function update() {
   ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
   ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  // Draw player
+  // Draw player **with placeholder box for visibility**
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
+
   const sprite = currentFrames[currentFrame];
   ctx.save();
   ctx.translate(player.x - cameraX + player.width/2, player.y + player.height/2);
