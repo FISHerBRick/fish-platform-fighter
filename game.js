@@ -1,39 +1,26 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Walk sprites
-const walkFrames = [
-  new Image(),
-  new Image()
-];
+// Player images
+const walkFrames = [new Image(), new Image()];
 walkFrames[0].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
 walkFrames[1].src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
 
-// Jump sprite
 const jumpFrame = new Image();
 jumpFrame.src = "https://raw.githubusercontent.com/kocho4671-jpg/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174930__2_-removebg-preview.png";
 
-// Animation variables
-let currentFrame = 0;
-let frameCount = 0;
-const frameSpeed = 10;
-let currentFrames = walkFrames;
-
-let cameraX = 0;
-let hitParticles = [];
-
 // Player
 const player = {
-  x: 50,
+  x: 100,
   y: 300,
   w: 50,
   h: 50,
   dy: 0,
   grounded: false,
-  attacking: false,
-  attackCooldown: 0,
   facingRight: true
 };
+
+// Physics
 const gravity = 0.6;
 const jumpPower = -12;
 const keys = {};
@@ -41,92 +28,38 @@ const keys = {};
 // Platforms
 const platforms = [
   { x: 0, y: 350, w: 800, h: 50 },
-  { x: 700, y: 300, w: 100, h: 10 },
-  { x: 900, y: 250, w: 100, h: 10 },
-  { x: 1100, y: 200, w: 100, h: 10 },
-  { x: 1300, y: 150, w: 100, h: 10 }
+  { x: 700, y: 300, w: 100, h: 10 }
 ];
 
-// Enemy
-let enemy = {
-  spawnX: 600,
-  x: 600,
-  y: 320,
-  w: 30,
-  h: 30,
-  dy: 0,
-  speed: 2,
-  gravity: 0.6,
-  jumpPower: -10,
-  grounded: false,
-  triggered: false,
-  patrolDir: 1
-};
+// Animation
+let currentFrame = 0;
+let frameCount = 0;
+const frameSpeed = 10;
+let currentFrames = walkFrames;
 
-// Game state
-let score = 0;
-let gameOver = false;
+// Camera
+let cameraX = 0;
 
 // Key listeners
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
-// Reset game
-function resetGame() {
-  player.x = 50;
-  player.y = 300;
-  player.dy = 0;
-  player.grounded = false;
-  score = 0;
-  gameOver = false;
-  enemy.x = enemy.spawnX;
-  enemy.y = 320;
-  enemy.triggered = false;
-}
-
-// Restart listener
-document.addEventListener("keydown", e => {
-  if (e.key === "r" || e.key === "R") resetGame();
-});
-
-// Game update loop
+// Game loop
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (gameOver) {
-    ctx.fillStyle = "#fff";
-    ctx.font = "28px monospace";
-    ctx.fillText("GAME OVER! Press R to Restart", 100, 200);
-    requestAnimationFrame(update);
-    return;
-  }
-
-  let moving = false;
-
   // Player movement
+  let moving = false;
   if (keys["d"]) { player.x += 5; player.facingRight = true; moving = true; }
   if (keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
   if (keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
 
-  // Decide which animation frames to use
-  currentFrames = player.grounded ? walkFrames : [jumpFrame];
-
-  // Animate walking frames
-  if (moving && player.grounded) {
-    frameCount++;
-    if (frameCount >= frameSpeed) {
-      currentFrame = (currentFrame + 1) % currentFrames.length;
-      frameCount = 0;
-    }
-  } else if (player.grounded) {
-    currentFrame = 0;
-  }
-
-  // Gravity & collision
+  // Gravity
   player.dy += gravity;
   player.y += player.dy;
   player.grounded = false;
 
+  // Platform collision
   for (const p of platforms) {
     if (
       player.x < p.x + p.w &&
@@ -140,7 +73,15 @@ function update() {
     }
   }
 
-  if (player.x < 0) player.x = 0;
+  // Update animation
+  currentFrames = player.grounded ? walkFrames : [jumpFrame];
+  if (moving && player.grounded) {
+    frameCount++;
+    if (frameCount >= frameSpeed) {
+      currentFrame = (currentFrame + 1) % currentFrames.length;
+      frameCount = 0;
+    }
+  } else if (player.grounded) currentFrame = 0;
 
   // Camera
   cameraX = player.x - canvas.width / 2 + player.w / 2;
@@ -154,31 +95,22 @@ function update() {
   ctx.fillStyle = "#888";
   for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
 
-  // Draw enemy
-  ctx.fillStyle = "#f00";
-  ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
-
   // Draw player
   const sprite = currentFrames[currentFrame];
   ctx.save();
-  ctx.translate(player.x - cameraX + player.w / 2, player.y + player.h / 2);
+  ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
   ctx.scale(player.facingRight ? 1 : -1, 1);
-  ctx.drawImage(sprite, -player.w / 2, -player.h / 2, player.w, player.h);
+  ctx.drawImage(sprite, -player.w/2, -player.h/2, player.w, player.h);
   ctx.restore();
-
-  // HUD
-  ctx.fillStyle = "#fff";
-  ctx.font = "20px monospace";
-  ctx.fillText(`Score: ${score}`, 20, 30);
 
   requestAnimationFrame(update);
 }
 
-// --- Start after images load ---
+// Wait for images to load
 let imagesLoaded = 0;
 [...walkFrames, jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
     if (imagesLoaded === 3) update();
-  };
+  }
 });
