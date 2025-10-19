@@ -21,8 +21,8 @@ const player = {
   attackCooldown: 0,
   facingRight: true
 };
-const gravity = 0.6;
-const jumpPower = -12;
+const gravity = 0.4;  // slower fall
+const jumpPower = -8; // lower jump speed
 
 // --- Enemy ---
 let enemy = {
