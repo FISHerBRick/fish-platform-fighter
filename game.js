@@ -300,12 +300,11 @@ for (let i = hitParticles.length - 1; i >= 0; i--) {
 
 let imagesLoaded = 0;
 
-// Check when all images are loaded
+// Wait for all 3 sprites to load before starting the game
 [...walkFrames, jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
     if (imagesLoaded === 3) {
-      // Start game after all 3 sprites are loaded
       update();
     }
   }
