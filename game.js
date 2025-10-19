@@ -2,10 +2,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 // --- Sprites ---
-const walkFrames = [
-  new Image(),
-  new Image()
-];
+const walkFrames = [new Image(), new Image()];
 walkFrames[0].src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174912__2_-removebg-preview.png";
 walkFrames[1].src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174923__2_-removebg-preview.png";
 
@@ -15,7 +12,7 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 // --- Player ---
 const player = {
   x: 50,
-  y: 0, // will set properly in resetGame
+  y: 0,
   width: 100,
   height: 100,
   dy: 0,
@@ -44,15 +41,8 @@ const platforms = [
 ];
 
 // --- Game State ---
-let keys = {},
-    currentFrame = 0,
-    frameCount = 0,
-    frameSpeed = 10,
-    currentFrames = walkFrames,
-    cameraX = 0,
-    score = 0,
-    gameOver = false,
-    hitParticles = [];
+let keys = {}, currentFrame = 0, frameCount = 0, frameSpeed = 10, currentFrames = walkFrames;
+let cameraX = 0, score = 0, gameOver = false, hitParticles = [];
 
 // --- Key Listeners ---
 document.addEventListener("keydown", e => keys[e.key] = true);
@@ -62,17 +52,17 @@ document.addEventListener("keydown", e => { if(e.key.toLowerCase() === "r") rese
 // --- Reset Game ---
 function resetGame() {
   player.x = 50;
-  player.y = platforms[0].y - player.height; // place on first platform
+  player.y = platforms[0].y - player.height; // start on first platform
   player.dy = 0;
-  player.grounded = true;
+  player.grounded = true; // make sure grounded is true
   score = 0;
   gameOver = false;
 
   enemy.x = enemy.spawnX;
   enemy.y = 320;
   enemy.dy = 0;
-  enemy.triggered = false;
   enemy.grounded = false;
+  enemy.triggered = false;
 
   hitParticles = [];
 }
@@ -103,17 +93,15 @@ function update() {
     if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
   } else if(player.grounded){ currentFrame = 0; }
 
-  // --- Gravity & Collision ---
-  if(!player.grounded){
-    player.dy += gravity;
-    player.y += player.dy;
-  }
-
+  // --- Gravity ---
+  player.dy += gravity;
+  player.y += player.dy;
   player.grounded = false;
-  for (const p of platforms) {
+
+  // --- Collision with platforms ---
+  for(const p of platforms){
     const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
-    const falling = player.dy >= 0;
-    if (withinX && falling && player.y + player.height <= p.y && player.y + player.height + player.dy >= p.y) {
+    if(withinX && player.y + player.height >= p.y && player.y + player.height <= p.y + player.dy + gravity + 1){
       player.y = p.y - player.height;
       player.dy = 0;
       player.grounded = true;
@@ -132,6 +120,7 @@ function update() {
   enemy.dy += enemy.gravity;
   enemy.y += enemy.dy;
   enemy.grounded = false;
+
   for(const p of platforms){
     if(enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
        enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y){
@@ -194,4 +183,3 @@ let imagesLoaded = 0;
     if(imagesLoaded===3) resetGame(); update();
   }
 });
-
