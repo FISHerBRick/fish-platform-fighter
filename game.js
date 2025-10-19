@@ -45,10 +45,18 @@ document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 document.addEventListener("keydown", e => { if(e.key.toLowerCase() === "r") resetGame(); });
 
-// --- Reset Game ---
 function resetGame() {
-  player.x = 50; player.y = 300; player.dy = 0; player.grounded = false; score = 0; gameOver = false;
-  enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false; enemy.grounded = false;
+  player.x = 50;
+  player.y = platforms[0].y - player.height; // <-- fix here
+  player.dy = 0;
+  player.grounded = true;
+  score = 0;
+  gameOver = false;
+
+  enemy.x = enemy.spawnX;
+  enemy.y = 320;
+  enemy.triggered = false;
+  enemy.grounded = false;
   hitParticles = [];
 }
 
@@ -96,9 +104,8 @@ for (const p of platforms) {
 }
 
 if (player.y + player.height > canvas.height) {
-  player.y = canvas.height - player.height; // floor of canvas
-  player.dy = 0;
-  player.grounded = true;
+ player.y = platforms[0].y - player.height; // place player on first platform
+ player.grounded = true;
 }
 
 if (player.x < 0) player.x = 0;
