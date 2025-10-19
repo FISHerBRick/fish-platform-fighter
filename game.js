@@ -78,17 +78,31 @@ function update() {
     if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
   } else if(player.grounded){ currentFrame = 0; }
 
-  // --- Gravity & Collision ---
-  player.dy += gravity;
-  player.y += player.dy;
-  player.grounded = false;
-  for(const p of platforms){
-    if(player.x < p.x + p.w && player.x + player.width > p.x &&
-       player.y + player.height < p.y + 10 && player.y + player.height + player.dy >= p.y){
-      player.y = p.y - player.height; player.dy = 0; player.grounded = true;
-    }
+ // --- Gravity & Collision ---
+player.dy += gravity;
+player.y += player.dy;
+player.grounded = false;
+
+for (const p of platforms) {
+  // Check horizontal overlap
+  const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
+  // Check vertical collision only when falling
+  const falling = player.dy >= 0;
+  if (withinX && falling && player.y + player.height <= p.y && player.y + player.height + player.dy >= p.y) {
+    player.y = p.y - player.height; // place on top of platform
+    player.dy = 0;
+    player.grounded = true;
   }
-  if(player.x < 0) player.x = 0;
+}
+
+if (player.y + player.height > canvas.height) {
+  player.y = canvas.height - player.height; // floor of canvas
+  player.dy = 0;
+  player.grounded = true;
+}
+
+if (player.x < 0) player.x = 0;
+
 
   // --- Attack ---
   if(keys["e"] && player.attackCooldown <= 0){
