@@ -23,16 +23,16 @@ let cameraX = 0;
 let hitParticles = [];
 
 // Player
-const player = { 
-  x: 50, 
-  y: 300, 
-  w: 30, 
-  h: 30, 
-  dy: 0, 
-  grounded: false, 
-  attacking: false, 
+const player = {
+  x: 50,
+  y: 300,
+  w: 50,
+  h: 50,
+  dy: 0,
+  grounded: false,
+  attacking: false,
   attackCooldown: 0,
-  facingRight: true,
+  facingRight: true
 };
 const gravity = 0.6;
 const jumpPower = -12;
@@ -47,7 +47,7 @@ const platforms = [
   { x: 1300, y: 150, w: 100, h: 10 }
 ];
 
-// Enemy (simple rectangle for now)
+// Enemy
 let enemy = {
   spawnX: 600,
   x: 600,
@@ -68,8 +68,8 @@ let score = 0;
 let gameOver = false;
 
 // Key listeners
-document.addEventListener("keydown", (e) => keys[e.key] = true);
-document.addEventListener("keyup", (e) => keys[e.key] = false);
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
 
 // Reset game
 function resetGame() {
@@ -79,25 +79,24 @@ function resetGame() {
   player.grounded = false;
   score = 0;
   gameOver = false;
-
   enemy.x = enemy.spawnX;
   enemy.y = 320;
   enemy.triggered = false;
 }
 
 // Restart listener
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", e => {
   if (e.key === "r" || e.key === "R") resetGame();
 });
 
-// Main update loop
+// Game update loop
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (gameOver) {
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
-    ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
+    ctx.fillText("GAME OVER! Press R to Restart", 100, 200);
     requestAnimationFrame(update);
     return;
   }
@@ -120,7 +119,7 @@ function update() {
       frameCount = 0;
     }
   } else if (player.grounded) {
-    currentFrame = 0; // idle frame
+    currentFrame = 0;
   }
 
   // Gravity & collision
@@ -140,10 +139,11 @@ function update() {
       player.grounded = true;
     }
   }
+
   if (player.x < 0) player.x = 0;
 
   // Camera
-  cameraX = player.x - canvas.width / 2 + player.w/2;
+  cameraX = player.x - canvas.width / 2 + player.w / 2;
   if (cameraX < 0) cameraX = 0;
 
   // Draw background
@@ -158,12 +158,12 @@ function update() {
   ctx.fillStyle = "#f00";
   ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  // Draw player sprite
+  // Draw player
   const sprite = currentFrames[currentFrame];
   ctx.save();
-  ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
+  ctx.translate(player.x - cameraX + player.w / 2, player.y + player.h / 2);
   ctx.scale(player.facingRight ? 1 : -1, 1);
-  ctx.drawImage(sprite, -player.w/2, -player.h/2, player.w, player.h);
+  ctx.drawImage(sprite, -player.w / 2, -player.h / 2, player.w, player.h);
   ctx.restore();
 
   // HUD
@@ -174,11 +174,11 @@ function update() {
   requestAnimationFrame(update);
 }
 
-// Start game after all images load
+// --- Start after images load ---
 let imagesLoaded = 0;
 [...walkFrames, jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
     if (imagesLoaded === 3) update();
-  }
+  };
 });
