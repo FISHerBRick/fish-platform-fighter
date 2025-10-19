@@ -14,8 +14,15 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 
 // --- Player ---
 const player = {
-  x: 50, y: 300, width: 100, height: 100, dy: 0,
-  grounded: false, attacking: false, attackCooldown: 0, facingRight: true
+  x: 50,
+  y: 0, // will set properly in resetGame
+  width: 100,
+  height: 100,
+  dy: 0,
+  grounded: false,
+  attacking: false,
+  attackCooldown: 0,
+  facingRight: true
 };
 const gravity = 0.6;
 const jumpPower = -12;
@@ -37,17 +44,25 @@ const platforms = [
 ];
 
 // --- Game State ---
-let keys = {}, currentFrame = 0, frameCount = 0, frameSpeed = 10, currentFrames = walkFrames;
-let cameraX = 0, score = 0, gameOver = false, hitParticles = [];
+let keys = {},
+    currentFrame = 0,
+    frameCount = 0,
+    frameSpeed = 10,
+    currentFrames = walkFrames,
+    cameraX = 0,
+    score = 0,
+    gameOver = false,
+    hitParticles = [];
 
 // --- Key Listeners ---
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 document.addEventListener("keydown", e => { if(e.key.toLowerCase() === "r") resetGame(); });
 
+// --- Reset Game ---
 function resetGame() {
   player.x = 50;
-  player.y = platforms[0].y - player.height; // <-- fix here
+  player.y = platforms[0].y - player.height; // place on first platform
   player.dy = 0;
   player.grounded = true;
   score = 0;
@@ -55,8 +70,10 @@ function resetGame() {
 
   enemy.x = enemy.spawnX;
   enemy.y = 320;
+  enemy.dy = 0;
   enemy.triggered = false;
   enemy.grounded = false;
+
   hitParticles = [];
 }
 
@@ -86,45 +103,41 @@ function update() {
     if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
   } else if(player.grounded){ currentFrame = 0; }
 
- // --- Gravity & Collision ---
-player.dy += gravity;
-player.y += player.dy;
-player.grounded = false;
+  // --- Gravity & Collision ---
+  if(!player.grounded){
+    player.dy += gravity;
+    player.y += player.dy;
+  }
 
-for (const p of platforms) {
-  // Check horizontal overlap
-  const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
-  // Check vertical collision only when falling
-  const falling = player.dy >= 0;
-  if (withinX && falling && player.y + player.height <= p.y && player.y + player.height + player.dy >= p.y) {
-    player.y = p.y - player.height; // place on top of platform
+  player.grounded = false;
+  for (const p of platforms) {
+    const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
+    const falling = player.dy >= 0;
+    if (withinX && falling && player.y + player.height <= p.y && player.y + player.height + player.dy >= p.y) {
+      player.y = p.y - player.height;
+      player.dy = 0;
+      player.grounded = true;
+    }
+  }
+
+  if(player.y + player.height > canvas.height){
+    player.y = platforms[0].y - player.height;
     player.dy = 0;
     player.grounded = true;
   }
-}
 
-if (player.y + player.height > canvas.height) {
- player.y = platforms[0].y - player.height; // place player on first platform
- player.grounded = true;
-}
-
-if (player.x < 0) player.x = 0;
-
-
-  // --- Attack ---
-  if(keys["e"] && player.attackCooldown <= 0){
-    player.attacking = true; player.attackCooldown = 30;
-    setTimeout(() => player.attacking = false, 200);
-  } else if(player.attackCooldown > 0){ player.attackCooldown--; }
+  if(player.x < 0) player.x = 0;
 
   // --- Enemy Physics ---
   enemy.dy += enemy.gravity;
-  enemy.y += enemy.dy; enemy.grounded = false;
-
+  enemy.y += enemy.dy;
+  enemy.grounded = false;
   for(const p of platforms){
     if(enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
        enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y){
-      enemy.y = p.y - enemy.h; enemy.dy = 0; enemy.grounded = true;
+      enemy.y = p.y - enemy.h;
+      enemy.dy = 0;
+      enemy.grounded = true;
     }
   }
 
@@ -149,24 +162,6 @@ if (player.x < 0) player.x = 0;
     gameOver = true;
   }
 
-  // --- Player Attack ---
-  if(player.attacking){
-    const attackRange = 50;
-    const attackBox = { x: player.facingRight ? player.x + player.width : player.x - attackRange, y: player.y, w: attackRange, h: player.height };
-    if(attackBox.x < enemy.x + enemy.w && attackBox.x + attackBox.w > enemy.x &&
-       attackBox.y < enemy.y + enemy.h && attackBox.y + attackBox.h > enemy.y){
-      score += 100;
-      for(let i=0;i<10;i++){ hitParticles.push({
-        x: enemy.x + enemy.w/2, y: enemy.y + enemy.h/2,
-        dx: (Math.random()-0.5)*4, dy:(Math.random()-0.5)*4,
-        size: Math.random()*5+2, life: 20 + Math.random()*10
-      }); }
-      enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false;
-    }
-    ctx.fillStyle = "rgba(0,255,0,0.3)";
-    ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
-  }
-
   // --- Camera ---
   cameraX = player.x - canvas.width/2 + player.width/2;
   if(cameraX < 0) cameraX = 0;
@@ -188,15 +183,6 @@ if (player.x < 0) player.x = 0;
   ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`,20,30);
 
-  // --- Particles ---
-  for(let i=hitParticles.length-1;i>=0;i--){
-    const p = hitParticles[i];
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(p.x - cameraX, p.y, p.size, p.size);
-    p.x += p.dx; p.y += p.dy; p.life--;
-    if(p.life <= 0) hitParticles.splice(i,1);
-  }
-
   requestAnimationFrame(update);
 }
 
@@ -205,6 +191,7 @@ let imagesLoaded = 0;
 [...walkFrames,jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
-    if(imagesLoaded===3) update();
+    if(imagesLoaded===3) resetGame(); update();
   }
 });
+
