@@ -297,5 +297,15 @@ for (let i = hitParticles.length - 1; i >= 0; i--) {
   requestAnimationFrame(update);
 }
 
-// Start game
-update();
+let imagesLoaded = 0;
+
+// Check when all images are loaded
+[...walkFrames, jumpFrame].forEach(img => {
+  img.onload = () => {
+    imagesLoaded++;
+    if (imagesLoaded === 3) {
+      // Start game after all 3 sprites are loaded
+      update();
+    }
+  }
+});
