@@ -87,12 +87,12 @@ function update() {
 // --- Player Movement ---
 const step = 1; // move 1px at a time
 if(keys["d"]) {
-  player.x += 0.1; // slower speed
+  player.x += -0.5; // slower speed
   player.facingRight = true;
   moving = true;
 }
 if(keys["a"]) {
-  player.x -= 0.1;
+  player.x -= -0.5;
   player.facingRight = false;
   moving = true;
 }
