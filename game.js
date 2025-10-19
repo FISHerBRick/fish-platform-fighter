@@ -13,7 +13,7 @@ const jumpFrame = new Image();
 jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fighter/main/Untitled9_20251019174930__2_-removebg-preview.png";
 
 // --- Player ---
-const player = { 
+const player = {
   x: 50, y: 300, width: 100, height: 100, dy: 0,
   grounded: false, attacking: false, attackCooldown: 0, facingRight: true
 };
@@ -21,7 +21,11 @@ const gravity = 0.6;
 const jumpPower = -12;
 
 // --- Enemy ---
-let enemy = { spawnX: 600, x: 600, y: 320, w: 30, h: 30, dy: 0, speed: 2, gravity: 0.6, jumpPower: -10, grounded: false, triggered: false, patrolDir: 1 };
+let enemy = {
+  spawnX: 600, x: 600, y: 320, w: 30, h: 30,
+  dy: 0, speed: 2, gravity: 0.6, jumpPower: -10,
+  grounded: false, triggered: false, patrolDir: 1
+};
 
 // --- Platforms ---
 const platforms = [
@@ -67,7 +71,7 @@ function update() {
   if(keys["a"]) { player.x -= 5; player.facingRight = false; moving = true; }
   if(keys["w"] && player.grounded) { player.dy = jumpPower; player.grounded = false; }
 
-  // --- Choose Animation Frames ---
+  // --- Animation ---
   currentFrames = player.grounded ? walkFrames : [jumpFrame];
   if(moving && player.grounded){
     frameCount++;
@@ -86,6 +90,12 @@ function update() {
   }
   if(player.x < 0) player.x = 0;
 
+  // --- Attack ---
+  if(keys["e"] && player.attackCooldown <= 0){
+    player.attacking = true; player.attackCooldown = 30;
+    setTimeout(() => player.attacking = false, 200);
+  } else if(player.attackCooldown > 0){ player.attackCooldown--; }
+
   // --- Enemy Physics ---
   enemy.dy += enemy.gravity;
   enemy.y += enemy.dy; enemy.grounded = false;
@@ -102,6 +112,7 @@ function update() {
   const dy = player.y - enemy.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   if(!enemy.triggered && dist < 300) enemy.triggered = true;
+
   if(enemy.triggered){
     enemy.x += Math.sign(dx) * enemy.speed;
     if(enemy.grounded && dy < -40 && Math.abs(dx) < 150){ enemy.dy = enemy.jumpPower; enemy.grounded = false; }
@@ -117,6 +128,24 @@ function update() {
     gameOver = true;
   }
 
+  // --- Player Attack ---
+  if(player.attacking){
+    const attackRange = 50;
+    const attackBox = { x: player.facingRight ? player.x + player.width : player.x - attackRange, y: player.y, w: attackRange, h: player.height };
+    if(attackBox.x < enemy.x + enemy.w && attackBox.x + attackBox.w > enemy.x &&
+       attackBox.y < enemy.y + enemy.h && attackBox.y + attackBox.h > enemy.y){
+      score += 100;
+      for(let i=0;i<10;i++){ hitParticles.push({
+        x: enemy.x + enemy.w/2, y: enemy.y + enemy.h/2,
+        dx: (Math.random()-0.5)*4, dy:(Math.random()-0.5)*4,
+        size: Math.random()*5+2, life: 20 + Math.random()*10
+      }); }
+      enemy.x = enemy.spawnX; enemy.y = 320; enemy.triggered = false;
+    }
+    ctx.fillStyle = "rgba(0,255,0,0.3)";
+    ctx.fillRect(attackBox.x - cameraX, attackBox.y, attackBox.w, attackBox.h);
+  }
+
   // --- Camera ---
   cameraX = player.x - canvas.width/2 + player.width/2;
   if(cameraX < 0) cameraX = 0;
@@ -126,10 +155,7 @@ function update() {
   ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
   ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
 
-  // Draw player **with placeholder box for visibility**
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
-
+  // Draw player sprite
   const sprite = currentFrames[currentFrame];
   ctx.save();
   ctx.translate(player.x - cameraX + player.width/2, player.y + player.height/2);
@@ -140,6 +166,15 @@ function update() {
   // HUD
   ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`,20,30);
+
+  // --- Particles ---
+  for(let i=hitParticles.length-1;i>=0;i--){
+    const p = hitParticles[i];
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(p.x - cameraX, p.y, p.size, p.size);
+    p.x += p.dx; p.y += p.dy; p.life--;
+    if(p.life <= 0) hitParticles.splice(i,1);
+  }
 
   requestAnimationFrame(update);
 }
