@@ -23,8 +23,8 @@ const player = {
 };
 // --- Physics ---
 const playerSpeed = 0;   // really slow horizontal speed
-const gravity = 0.3;       // slower falling
-const jumpPower = -6;      // shorter jump
+const gravity = 0.7;       // slower falling
+const jumpPower = -12;      // shorter jump
 
 
 // --- Enemy ---
@@ -90,12 +90,12 @@ function update() {
 // --- Player Movement ---
 const step = 1; // move 1px at a time
 if(keys["a"]) {
-  player.x += -20; // slower speed
+  player.x += 5; // slower speed
   player.facingRight = true;
   moving = true;
 }
 if(keys["d"]) {
-  player.x -= -20;
+  player.x -= 5;
   player.facingRight = false;
   moving = true;
 }
