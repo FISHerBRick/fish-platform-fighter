@@ -1,5 +1,5 @@
 
-// game.js - Replace your file with this
+// game.js - Fixed movement, speed, and jump-over-enemy
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -14,7 +14,7 @@ jumpFrame.src = "https://raw.githubusercontent.com/FISHerBRick/fish-platform-fig
 // --- Player ---
 const player = {
   x: 50,
-  y: 0,             // set in resetGame()
+  y: 0,
   width: 100,
   height: 100,
   dy: 0,
@@ -22,18 +22,16 @@ const player = {
   facingRight: true
 };
 
-// --- Tunables (change these to taste) ---
-const PLAYER_SPEED = 6;   // << make this smaller to slow the player (try 0.3 if still fast)
-const GRAVITY = 0.5;
-const JUMP_POWER = -18;
-
-// world width prevents running off forever
+// --- Tunables ---
+const PLAYER_SPEED = 7;     // Balanced speed (not too slow)
+const GRAVITY = 0.55;       // Good gravity feel
+const JUMP_POWER = -16;     // Stronger jump for clearing enemies
 const WORLD_WIDTH = 2600;
 
 // --- Enemy ---
 let enemy = {
   spawnX: 600, x: 600, y: 320, w: 30, h: 30,
-  dy: 0, speed: 0.6, gravity: 0.6, jumpPower: -8,
+  dy: 0, speed: 1.2, gravity: 0.6, jumpPower: -8,
   grounded: false, triggered: false, patrolDir: 1
 };
 
@@ -50,16 +48,17 @@ const platforms = [
 ];
 
 // --- State ---
-let keys = {}; // will store normalized keys like 'a', 'arrowleft', 'd', etc.
+let keys = {};
 let currentFrame = 0, frameCount = 0, frameSpeed = 10;
 let cameraX = 0, score = 0, gameOver = false;
 
-// --- Input: normalize keys so uppercase doesn't matter & support arrows ---
+// --- Input ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (k === "arrowleft") keys["arrowleft"] = true;
   else if (k === "arrowright") keys["arrowright"] = true;
   else keys[k] = true;
+  if (k === "r") resetGame();
 });
 document.addEventListener("keyup", e => {
   const k = e.key.toLowerCase();
@@ -67,11 +66,8 @@ document.addEventListener("keyup", e => {
   else if (k === "arrowright") keys["arrowright"] = false;
   else keys[k] = false;
 });
-document.addEventListener("keydown", e => {
-  if (e.key.toLowerCase() === "r") resetGame();
-});
 
-// --- Reset/Start ---
+// --- Reset Game ---
 function resetGame() {
   player.x = 50;
   player.y = platforms[0].y - player.height;
@@ -88,7 +84,7 @@ function resetGame() {
   enemy.triggered = false;
 }
 
-// --- Main update loop ---
+// --- Main Update ---
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -102,8 +98,7 @@ function update() {
 
   let moving = false;
 
-  // --- Horizontal movement (A/Left = left, D/Right = right) ---
-  // Use both WASD and arrows. This code explicitly ensures A/Left subtracts and D/Right adds.
+  // --- Movement ---
   if (keys["a"] || keys["arrowleft"]) {
     player.x -= PLAYER_SPEED;
     player.facingRight = false;
@@ -115,17 +110,12 @@ function update() {
     moving = true;
   }
 
-  // clamp player within the world so they can't "glitch out" far to the right
-  if (player.x < 0) player.x = 0;
-  if (player.x + player.width > WORLD_WIDTH) player.x = WORLD_WIDTH - player.width;
-
-  // --- Jump (W or ArrowUp) ---
   if ((keys["w"] || keys["arrowup"]) && player.grounded) {
     player.dy = JUMP_POWER;
     player.grounded = false;
   }
 
-  // --- Vertical physics & collision (single, deterministic pass) ---
+  // --- Physics ---
   player.dy += GRAVITY;
   let nextY = player.y + player.dy;
   player.grounded = false;
@@ -134,14 +124,14 @@ function update() {
     const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
     if (!overlapsX) continue;
 
-    // landing: was above, will cross platform top this frame, and moving down
+    // Land on platform
     if (player.y + player.height <= p.y && nextY + player.height >= p.y && player.dy >= 0) {
       nextY = p.y - player.height;
       player.dy = 0;
       player.grounded = true;
     }
 
-    // head hit when moving up into platform bottom
+    // Hit head
     if (player.y >= p.y + p.h && nextY <= p.y + p.h && player.dy < 0) {
       nextY = p.y + p.h;
       player.dy = 0;
@@ -150,17 +140,20 @@ function update() {
 
   player.y = nextY;
 
-  // bottom-of-canvas safety (snap to first platform if falling past)
+  // --- Stay in world ---
   if (player.y + player.height > canvas.height) {
     player.y = platforms[0].y - player.height;
     player.dy = 0;
     player.grounded = true;
   }
+  if (player.x < 0) player.x = 0;
+  if (player.x + player.width > WORLD_WIDTH) player.x = WORLD_WIDTH - player.width;
 
-  // --- Enemy physics & AI (slower to allow jumping over) ---
+  // --- Enemy ---
   enemy.dy += enemy.gravity;
   enemy.y += enemy.dy;
   enemy.grounded = false;
+
   for (const p of platforms) {
     if (enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
         enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y) {
@@ -170,7 +163,6 @@ function update() {
     }
   }
 
-  // chase player if close
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
   const dist = Math.hypot(dx, dy);
@@ -178,7 +170,6 @@ function update() {
 
   if (enemy.triggered) {
     enemy.x += Math.sign(dx) * enemy.speed;
-    // small jump behavior
     if (enemy.grounded && dy < -40 && Math.abs(dx) < 150) {
       enemy.dy = enemy.jumpPower;
       enemy.grounded = false;
@@ -189,19 +180,21 @@ function update() {
     if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
   }
 
-  // clamp enemy
   if (enemy.x < 0) enemy.x = 0;
   if (enemy.x + enemy.w > WORLD_WIDTH) enemy.x = WORLD_WIDTH - enemy.w;
 
-  // --- Player / enemy collision -> game over ---
-  if (player.x < enemy.x + enemy.w &&
-      player.x + player.width > enemy.x &&
-      player.y < enemy.y + enemy.h &&
-      player.y + player.height > enemy.y) {
+  // --- Collision (Only triggers when grounded, avoids mid-air glitch) ---
+  const touchingEnemy =
+    player.x < enemy.x + enemy.w &&
+    player.x + player.width > enemy.x &&
+    player.y < enemy.y + enemy.h &&
+    player.y + player.height > enemy.y;
+
+  if (touchingEnemy && player.grounded) {
     gameOver = true;
   }
 
-  // --- Animation frames ---
+  // --- Animation ---
   const frames = player.grounded ? walkFrames : [jumpFrame];
   if (moving && player.grounded) {
     frameCount++;
@@ -209,15 +202,13 @@ function update() {
       currentFrame = (currentFrame + 1) % frames.length;
       frameCount = 0;
     }
-  } else if (player.grounded) {
-    currentFrame = 0;
-  }
+  } else if (player.grounded) currentFrame = 0;
 
-  // --- Camera (clamped to world) ---
+  // --- Camera ---
   cameraX = player.x - canvas.width / 2 + player.width / 2;
   if (cameraX < 0) cameraX = 0;
-  const maxCamera = WORLD_WIDTH - canvas.width;
-  if (cameraX > maxCamera) cameraX = maxCamera;
+  if (cameraX > WORLD_WIDTH - canvas.width)
+    cameraX = WORLD_WIDTH - canvas.width;
 
   // --- Draw ---
   ctx.fillStyle = "#111";
