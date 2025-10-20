@@ -23,7 +23,7 @@ const player = {
 };
 
 // --- Tunables (change these to taste) ---
-const PLAYER_SPEED = 1;   // << make this smaller to slow the player (try 0.3 if still fast)
+const PLAYER_SPEED = 1.65;   // << make this smaller to slow the player (try 0.3 if still fast)
 const GRAVITY = 0.10;
 const JUMP_POWER = -20;
 
