@@ -22,7 +22,7 @@ const player = {
   facingRight: true
 };
 // --- Physics ---
-const playerSpeed = 0.2;   // really slow horizontal speed
+const playerSpeed = -5;   // really slow horizontal speed
 const gravity = 0.3;       // slower falling
 const jumpPower = -6;      // shorter jump
 
