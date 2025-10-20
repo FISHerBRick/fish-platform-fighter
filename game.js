@@ -23,9 +23,9 @@ const player = {
 };
 
 // --- Tunables (change these to taste) ---
-const PLAYER_SPEED = 0.3;   // << make this smaller to slow the player (try 0.3 if still fast)
-const GRAVITY = 0.45;
-const JUMP_POWER = -9;
+const PLAYER_SPEED = 0.45;   // << make this smaller to slow the player (try 0.3 if still fast)
+const GRAVITY = 0.6;
+const JUMP_POWER = -12;
 
 // world width prevents running off forever
 const WORLD_WIDTH = 2600;
