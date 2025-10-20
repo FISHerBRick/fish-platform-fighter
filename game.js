@@ -17,20 +17,18 @@ const player = {
   height: 100,
   dy: 0,
   grounded: false,
-  attacking: false,
-  attackCooldown: 0,
   facingRight: true
 };
-// --- Physics ---
-const playerSpeed = 0;   // really slow horizontal speed
-const gravity = 0.7;       // slower falling
-const jumpPower = -12;      // shorter jump
 
+// --- Physics ---
+const playerSpeed = 3;   // slower & smoother
+const gravity = 0.5;     // more realistic fall
+const jumpPower = -11;   // higher jump
 
 // --- Enemy ---
 let enemy = {
   spawnX: 600, x: 600, y: 320, w: 30, h: 30,
-  dy: 0, speed: 2, gravity: 0.6, jumpPower: -10,
+  dy: 0, speed: 1.5, gravity: 0.6, jumpPower: -10,
   grounded: false, triggered: false, patrolDir: 1
 };
 
@@ -47,20 +45,25 @@ const platforms = [
 ];
 
 // --- Game State ---
-let keys = {}, currentFrame = 0, frameCount = 0, frameSpeed = 10, currentFrames = walkFrames;
-let cameraX = 0, score = 0, gameOver = false, hitParticles = [];
+let keys = {};
+let currentFrame = 0;
+let frameCount = 0;
+let frameSpeed = 10;
+let cameraX = 0;
+let score = 0;
+let gameOver = false;
 
-// --- Key Listeners ---
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+// --- Controls ---
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 document.addEventListener("keydown", e => { if(e.key.toLowerCase() === "r") resetGame(); });
 
-// --- Reset Game ---
+// --- Reset ---
 function resetGame() {
   player.x = 50;
-  player.y = platforms[0].y - player.height; // start on first platform
+  player.y = platforms[0].y - player.height;
   player.dy = 0;
-  player.grounded = true; // make sure grounded is true
+  player.grounded = true;
   score = 0;
   gameOver = false;
 
@@ -69,15 +72,13 @@ function resetGame() {
   enemy.dy = 0;
   enemy.grounded = false;
   enemy.triggered = false;
-
-  hitParticles = [];
 }
 
 // --- Update Loop ---
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if(gameOver){
+  if (gameOver) {
     ctx.fillStyle = "#fff";
     ctx.font = "28px monospace";
     ctx.fillText("GAME OVER! Press R to Restart", 150, 200);
@@ -87,128 +88,134 @@ function update() {
 
   let moving = false;
 
-// --- Player Movement ---
-const step = 1; // move 1px at a time
-if(keys["a"]) {
-  player.x += 5; // slower speed
-  player.facingRight = true;
-  moving = true;
-}
-if(keys["d"]) {
-  player.x -= 5;
-  player.facingRight = false;
-  moving = true;
-}
+  // --- Player Movement ---
+  if (keys["a"]) {
+    player.x -= playerSpeed; // move LEFT (fixed)
+    player.facingRight = false;
+    moving = true;
+  }
+  if (keys["d"]) {
+    player.x += playerSpeed; // move RIGHT (fixed)
+    player.facingRight = true;
+    moving = true;
+  }
 
-if(keys["w"] && player.grounded) {
-  player.dy = jumpPower;
+  if (keys["w"] && player.grounded) {
+    player.dy = jumpPower;
+    player.grounded = false;
+  }
+
+  // --- Gravity ---
+  player.dy += gravity;
+  player.y += player.dy;
+
+  // --- Platform Collision ---
   player.grounded = false;
-}
-
-// --- Animation ---
-currentFrames = player.grounded ? walkFrames : [jumpFrame];
-if(moving && player.grounded){
-  frameCount++;
-  if(frameCount >= frameSpeed){ currentFrame = (currentFrame + 1) % currentFrames.length; frameCount = 0; }
-} else if(player.grounded){ currentFrame = 0; }
-
-// --- Gravity & Collision ---
-player.dy += gravity;
-player.grounded = false;
-
-let nextY = player.y + player.dy;
-
-for(const p of platforms){
-  const withinX = player.x + player.width > p.x && player.x < p.x + p.w;
-  if(withinX){
-    // falling down
-    if(player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y){
-      nextY = p.y - player.height;
+  for (const p of platforms) {
+    if (
+      player.x + player.width > p.x &&
+      player.x < p.x + p.w &&
+      player.y + player.height > p.y &&
+      player.y + player.height < p.y + 20 &&
+      player.dy >= 0
+    ) {
+      player.y = p.y - player.height;
       player.dy = 0;
       player.grounded = true;
     }
-    // moving up (hit ceiling)
-    if(player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h){
-      nextY = p.y + p.h;
-      player.dy = 0;
-    }
   }
-}
-player.y = nextY;
 
-// keep player inside canvas
-  if(player.y + player.height > canvas.height){
+  if (player.y + player.height > canvas.height) {
     player.y = platforms[0].y - player.height;
     player.dy = 0;
     player.grounded = true;
   }
 
-  if(player.x < 0) player.x = 0;
+  if (player.x < 0) player.x = 0;
 
-  // --- Enemy Physics ---
+  // --- Enemy Logic ---
   enemy.dy += enemy.gravity;
   enemy.y += enemy.dy;
   enemy.grounded = false;
 
-  for(const p of platforms){
-    if(enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
-       enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y){
+  for (const p of platforms) {
+    if (enemy.x < p.x + p.w && enemy.x + enemy.w > p.x &&
+        enemy.y + enemy.h < p.y + 10 && enemy.y + enemy.h + enemy.dy >= p.y) {
       enemy.y = p.y - enemy.h;
       enemy.dy = 0;
       enemy.grounded = true;
     }
   }
 
-  // --- Enemy AI ---
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  if(!enemy.triggered && dist < 300) enemy.triggered = true;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (!enemy.triggered && dist < 300) enemy.triggered = true;
 
-  if(enemy.triggered){
+  if (enemy.triggered) {
     enemy.x += Math.sign(dx) * enemy.speed;
-    if(enemy.grounded && dy < -40 && Math.abs(dx) < 150){ enemy.dy = enemy.jumpPower; enemy.grounded = false; }
-  } else {
-    enemy.x += enemy.patrolDir * 1;
-    if(enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
-    if(enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
+    if (enemy.grounded && dy < -40 && Math.abs(dx) < 150) {
+      enemy.dy = enemy.jumpPower;
+      enemy.grounded = false;
+    }
   }
 
-  // --- Player-Enemy Collision ---
-  if(player.x < enemy.x + enemy.w && player.x + player.width > enemy.x &&
-     player.y < enemy.y + enemy.h && player.y + player.height > enemy.y){
+  // --- Collision Player/Enemy ---
+  if (player.x < enemy.x + enemy.w &&
+      player.x + player.width > enemy.x &&
+      player.y < enemy.y + enemy.h &&
+      player.y + player.height > enemy.y) {
     gameOver = true;
   }
 
+  // --- Animation ---
+  const frames = player.grounded ? walkFrames : [jumpFrame];
+  if (moving && player.grounded) {
+    frameCount++;
+    if (frameCount >= frameSpeed) {
+      currentFrame = (currentFrame + 1) % frames.length;
+      frameCount = 0;
+    }
+  } else if (player.grounded) {
+    currentFrame = 0;
+  }
+
   // --- Camera ---
-  cameraX = player.x - canvas.width/2 + player.width/2;
-  if(cameraX < 0) cameraX = 0;
+  cameraX = player.x - canvas.width / 2 + player.width / 2;
+  if (cameraX < 0) cameraX = 0;
 
   // --- Draw ---
-  ctx.fillStyle = "#111"; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = "#888"; for(const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
-  ctx.fillStyle = "#f00"; ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw player sprite
-  const sprite = currentFrames[currentFrame];
+  ctx.fillStyle = "#888";
+  for (const p of platforms) ctx.fillRect(p.x - cameraX, p.y, p.w, p.h);
+
+  ctx.fillStyle = "#f00";
+  ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.w, enemy.h);
+
+  const sprite = frames[currentFrame];
   ctx.save();
-  ctx.translate(player.x - cameraX + player.width/2, player.y + player.height/2);
-  ctx.scale(player.facingRight?1:-1,1);
-  ctx.drawImage(sprite, -player.width/2, -player.height/2, player.width, player.height);
+  ctx.translate(player.x - cameraX + player.width / 2, player.y + player.height / 2);
+  ctx.scale(player.facingRight ? 1 : -1, 1);
+  ctx.drawImage(sprite, -player.width / 2, -player.height / 2, player.width, player.height);
   ctx.restore();
 
-  // HUD
-  ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
-  ctx.fillText(`Score: ${score}`,20,30);
+  ctx.fillStyle = "#fff";
+  ctx.font = "20px monospace";
+  ctx.fillText(`Score: ${score}`, 20, 30);
 
   requestAnimationFrame(update);
 }
 
-// --- Start after images load ---
+// --- Start Game ---
 let imagesLoaded = 0;
-[...walkFrames,jumpFrame].forEach(img => {
+[...walkFrames, jumpFrame].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
-    if(imagesLoaded===3) resetGame(); update();
-  }
+    if (imagesLoaded === 3) {
+      resetGame();
+      update();
+    }
+  };
 });
