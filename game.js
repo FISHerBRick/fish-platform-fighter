@@ -25,7 +25,7 @@ const player = {
 // --- Tunables ---
 const PLAYER_SPEED = 6;     // Balanced speed (not too slow)
 const GRAVITY = 0.6;       // Good gravity feel
-const JUMP_POWER = -12;     // Stronger jump for clearing enemies
+const JUMP_POWER = -8;     // Stronger jump for clearing enemies
 const WORLD_WIDTH = 2600;
 
 // --- Enemy ---
