@@ -22,7 +22,7 @@ const player = {
   facingRight: true
 };
 
-// --- Tunables ---
+// --- Tunables ---  
 const PLAYER_SPEED = 6;     // Balanced speed (not too slow)
 const GRAVITY = 0.6;       // Good gravity feel
 const JUMP_POWER = -8;     // Stronger jump for clearing enemies
@@ -55,7 +55,7 @@ let cameraX = 0, score = 0, gameOver = false;
 // --- Input ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
-  if (k === "arrowleft") keys["arrowleft"] = true;
+  if (k === "arrowleft") keys["arrowleft"] = true; 
   else if (k === "arrowright") keys["arrowright"] = true;
   else keys[k] = true;
   if (k === "r") resetGame();
@@ -116,35 +116,36 @@ function update() {
   }
 
   // --- Physics ---
-  player.dy += GRAVITY;
-  let nextY = player.y + player.dy;
-  player.grounded = false;
+ // --- Player vertical physics & platform collision ---
+player.dy += GRAVITY;
+let nextY = player.y + player.dy;
+player.grounded = false;
 
-  for (const p of platforms) {
-    const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
-    if (!overlapsX) continue;
+for (const p of platforms) {
+  const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
+  if (!overlapsX) continue;
 
-    // Land on platform
-    if (player.y + player.height <= p.y && nextY + player.height >= p.y && player.dy >= 0) {
-      nextY = p.y - player.height;
-      player.dy = 0;
-      player.grounded = true;
-    }
-
-    // Hit head
-    if (player.y >= p.y + p.h && nextY <= p.y + p.h && player.dy < 0) {
-      nextY = p.y + p.h;
-      player.dy = 0;
-    }
-  }
-
-  player.y = nextY;
-
-  // --- Stay in world ---
-  if (player.y + player.height > canvas.height) {
-    player.y = platforms[0].y - player.height;
+  // landing on top
+  if (player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y) {
+    nextY = p.y - player.height;
     player.dy = 0;
     player.grounded = true;
+  }
+
+  // hitting bottom of platform
+  if (player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h) {
+    nextY = p.y + p.h;
+    player.dy = 0;
+  }
+}
+
+player.y = nextY;
+
+// keep player in bounds
+if (player.y + player.height > canvas.height) {
+  player.y = platforms[0].y - player.height;
+  player.dy = 0;
+  player.grounded = true;
   }
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > WORLD_WIDTH) player.x = WORLD_WIDTH - player.width;
