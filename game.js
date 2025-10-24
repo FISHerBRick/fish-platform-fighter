@@ -55,16 +55,23 @@ let cameraX = 0, score = 0, gameOver = false;
 // --- Input ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
-  if (k === "arrowleft") keys["arrowleft"] = true; 
-  else if (k === "arrowright") keys["arrowright"] = true;
-  else keys[k] = true;
+  if (["w","a","s","d","arrowup","arrowleft","arrowright"].includes(k)) e.preventDefault(); // fix
+  if (k === "w") keys["up"] = true;
+  if (k === "a") keys["left"] = true;
+  if (k === "d") keys["right"] = true;
+  if (k === "arrowup") keys["up"] = true;
+  if (k === "arrowleft") keys["left"] = true;
+  if (k === "arrowright") keys["right"] = true;
   if (k === "r") resetGame();
 });
 document.addEventListener("keyup", e => {
   const k = e.key.toLowerCase();
-  if (k === "arrowleft") keys["arrowleft"] = false;
-  else if (k === "arrowright") keys["arrowright"] = false;
-  else keys[k] = false;
+  if (k === "w") keys["up"] = false;
+  if (k === "a") keys["left"] = false;
+  if (k === "d") keys["right"] = false;
+  if (k === "arrowup") keys["up"] = false; 
+  if (k === "arrowleft") keys["left"] = false;
+  if (k === "arrowright") keys["right"] = false;
 });
 
 // --- Reset Game ---
@@ -99,20 +106,20 @@ function update() {
   let moving = false;
 
   // --- Movement ---
-  if (keys["a"] || keys["arrowleft"]) {
-    player.x -= PLAYER_SPEED;
-    player.facingRight = false;
+  if (keys["left"]) { 
+    player.x -= PLAYER_SPEED; 
+    player.facingRight = false; 
     moving = true;
   }
-  if (keys["d"] || keys["arrowright"]) {
-    player.x += PLAYER_SPEED;
-    player.facingRight = true;
+  if (keys["right"]) { 
+    player.x += PLAYER_SPEED; 
+    player.facingRight = true; 
     moving = true;
   }
-
-  if ((keys["w"] || keys["arrowup"]) && player.grounded) {
+  if (keys["up"] && player.grounded) {
     player.dy = JUMP_POWER;
     player.grounded = false;
+  }
   }
 
   // --- Physics ---
@@ -176,9 +183,9 @@ if (player.y + player.height > canvas.height) {
       enemy.grounded = false;
     }
   } else {
-    enemy.x += enemy.patrolDir * 0.6;
-    if (enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
-    if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
+      enemy.x += enemy.patrolDir * 0.6;
+      if (enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
+      if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
   }
 
   if (enemy.x < 0) enemy.x = 0;
@@ -191,7 +198,7 @@ if (player.y + player.height > canvas.height) {
     player.y < enemy.y + enemy.h &&
     player.y + player.height > enemy.y;
 
-  if (touchingEnemy && player.grounded) {
+  if (touchingEnemy) {
     gameOver = true;
   }
 
