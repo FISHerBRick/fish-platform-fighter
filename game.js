@@ -120,7 +120,6 @@ function update() {
     player.dy = JUMP_POWER;
     player.grounded = false;
   }
-  }
 
   // --- Physics ---
  // --- Player vertical physics & platform collision ---
@@ -198,7 +197,7 @@ if (player.y + player.height > canvas.height) {
     player.y < enemy.y + enemy.h &&
     player.y + player.height > enemy.y;
 
-  if (touchingEnemy) {
+  if (touchingEnemy && player.grounded) {
     gameOver = true;
   }
 
