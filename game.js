@@ -49,11 +49,20 @@ let keys = {};
 let currentFrame = 0, frameCount = 0, frameSpeed = 10;
 let cameraX = 0, score = 0, gameOver = false;
 
+let jumpPressed = false;
+
 // --- Input (WASD only) ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (["w","a","s","d"].includes(k)) e.preventDefault();
-  if (k === "w") keys.up = true;
+  if (k === "w") {
+    keys.up = true;
+    if (!jumpPressed && player.grounded) { // only trigger jump once
+      player.dy = JUMP_POWER;
+      player.grounded = false;
+      jumpPressed = true;
+    }
+  }
   if (k === "a") keys.left = true;
   if (k === "d") keys.right = true;
   if (k === "r") resetGame();
@@ -61,7 +70,10 @@ document.addEventListener("keydown", e => {
 
 document.addEventListener("keyup", e => {
   const k = e.key.toLowerCase();
-  if (k === "w") keys.up = false;
+  if (k === "w") {
+    keys.up = false;
+    jumpPressed = false; // reset lock when key released
+  }
   if (k === "a") keys.left = false;
   if (k === "d") keys.right = false;
 });
