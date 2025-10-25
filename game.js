@@ -126,7 +126,7 @@ function update() {
     if (player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y) {
       nextY = p.y - player.height;
       player.dy = 0;
-      player.grounded = true;
+      groundedThisFrame = true;
     }
 
     // Hitting bottom
@@ -137,6 +137,7 @@ function update() {
   }
 
   player.y = nextY;
+  player.grounded = groundedThisFrame;
 
   // Keep player in bounds
   if (player.y + player.height > canvas.height) {
@@ -189,9 +190,18 @@ function update() {
     player.y < enemy.y + enemy.h &&
     player.y + player.height > enemy.y;
 
-  if (touchingEnemy && player.grounded) {
-    gameOver = true;
-  }
+  // Check collision
+if (touchingEnemy) {
+    // Only die if hitting from the side or bottom
+    if (player.y + player.height - player.dy <= enemy.y) {
+        // player landed on enemy — maybe bounce
+        player.dy = JUMP_POWER / 2; // bounce up
+        enemy.triggered = false; // or destroy enemy
+        score += 100;
+    } else {
+        gameOver = true; // hit from side or bottom
+    }
+}
 
   // --- Animation ---
   const frames = player.grounded ? walkFrames : [jumpFrame];
