@@ -144,8 +144,19 @@ function update() {
     }
   }
 
-  player.y = nextY;
-  player.grounded = groundedThisFrame;
+  // Clamp Y to stay within the canvas
+if (nextY + player.height > canvas.height) {
+    player.y = platforms[0].y - player.height;
+    player.dy = 0;
+    player.grounded = true;
+} else if (nextY < 0) {
+    player.y = 0;
+    player.dy = 0;
+    player.grounded = false;
+} else {
+    player.y = nextY;
+    player.grounded = groundedThisFrame;
+}
 
   // Keep player in bounds
   if (player.y + player.height > canvas.height) {
@@ -153,8 +164,7 @@ function update() {
     player.dy = 0;
     player.grounded = true;
   }
-  if (player.x < 0) player.x = 0;
-  if (player.x + player.width > WORLD_WIDTH) player.x = WORLD_WIDTH - player.width;
+  player.x = Math.max(0, Math.min(player.x, WORLD_WIDTH - player.width));
 
   // --- Enemy ---
   enemy.dy += enemy.gravity;
@@ -223,8 +233,7 @@ if (touchingEnemy) {
 
   // --- Camera ---
   cameraX = player.x - canvas.width / 2 + player.width / 2;
-  if (cameraX < 0) cameraX = 0;
-  if (cameraX > WORLD_WIDTH - canvas.width) cameraX = WORLD_WIDTH - canvas.width;
+cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
 
   // --- Draw ---
   ctx.fillStyle = "#111";
