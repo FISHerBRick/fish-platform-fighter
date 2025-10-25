@@ -1,6 +1,3 @@
-
-// game.js - Fixed movement, speed, and jump-over-enemy
-
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -22,10 +19,10 @@ const player = {
   facingRight: true
 };
 
-// --- Tunables ---  
-const PLAYER_SPEED = 6;     // Balanced speed (not too slow)
-const GRAVITY = 0.7;       // Good gravity feel
-const JUMP_POWER = -10;     // Stronger jump for clearing enemies
+// --- Tunables ---
+const PLAYER_SPEED = 6;
+const GRAVITY = 0.7;
+const JUMP_POWER = -10;
 const WORLD_WIDTH = 2600;
 
 // --- Enemy ---
@@ -52,26 +49,21 @@ let keys = {};
 let currentFrame = 0, frameCount = 0, frameSpeed = 10;
 let cameraX = 0, score = 0, gameOver = false;
 
-// --- Input ---
+// --- Input (WASD only) ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
-  if (["w","a","s","d","arrowup","arrowleft","arrowright"].includes(k)) e.preventDefault(); // fix
-  if (k === "w") keys["up"] = true;
-  if (k === "a") keys["left"] = true;
-  if (k === "d") keys["right"] = true;
-  if (k === "arrowup") keys["up"] = true;
-  if (k === "arrowleft") keys["left"] = true;
-  if (k === "arrowright") keys["right"] = true;
+  if (["w","a","s","d"].includes(k)) e.preventDefault();
+  if (k === "w") keys.up = true;
+  if (k === "a") keys.left = true;
+  if (k === "d") keys.right = true;
   if (k === "r") resetGame();
 });
+
 document.addEventListener("keyup", e => {
   const k = e.key.toLowerCase();
-  if (k === "w") keys["up"] = false;
-  if (k === "a") keys["left"] = false;
-  if (k === "d") keys["right"] = false;
-  if (k === "arrowup") keys["up"] = false; 
-  if (k === "arrowleft") keys["left"] = false;
-  if (k === "arrowright") keys["right"] = false;
+  if (k === "w") keys.up = false;
+  if (k === "a") keys.left = false;
+  if (k === "d") keys.right = false;
 });
 
 // --- Reset Game ---
@@ -106,52 +98,51 @@ function update() {
   let moving = false;
 
   // --- Movement ---
-  if (keys["left"]) { 
+  if (keys.left) { 
     player.x -= PLAYER_SPEED; 
     player.facingRight = false; 
-    moving = true;
+    moving = true; 
   }
-  if (keys["right"]) { 
+  if (keys.right) { 
     player.x += PLAYER_SPEED; 
     player.facingRight = true; 
-    moving = true;
+    moving = true; 
   }
-  if (keys["up"] && player.grounded) {
-    player.dy = JUMP_POWER;
-    player.grounded = false;
+  if (keys.up && player.grounded) { 
+    player.dy = JUMP_POWER; 
+    player.grounded = false; 
   }
 
-  // --- Physics ---
- // --- Player vertical physics & platform collision ---
-player.dy += GRAVITY;
-let nextY = player.y + player.dy;
-player.grounded = false;
+  // --- Physics & Platform Collision ---
+  player.dy += GRAVITY;
+  let nextY = player.y + player.dy;
+  player.grounded = false;
 
-for (const p of platforms) {
-  const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
-  if (!overlapsX) continue;
+  for (const p of platforms) {
+    const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
+    if (!overlapsX) continue;
 
-  // landing on top
-  if (player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y) {
-    nextY = p.y - player.height;
+    // Landing on top
+    if (player.dy >= 0 && player.y + player.height <= p.y && nextY + player.height >= p.y) {
+      nextY = p.y - player.height;
+      player.dy = 0;
+      player.grounded = true;
+    }
+
+    // Hitting bottom
+    if (player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h) {
+      nextY = p.y + p.h;
+      player.dy = 0;
+    }
+  }
+
+  player.y = nextY;
+
+  // Keep player in bounds
+  if (player.y + player.height > canvas.height) {
+    player.y = platforms[0].y - player.height;
     player.dy = 0;
     player.grounded = true;
-  }
-
-  // hitting bottom of platform
-  if (player.dy < 0 && player.y >= p.y + p.h && nextY <= p.y + p.h) {
-    nextY = p.y + p.h;
-    player.dy = 0;
-  }
-}
-
-player.y = nextY;
-
-// keep player in bounds
-if (player.y + player.height > canvas.height) {
-  player.y = platforms[0].y - player.height;
-  player.dy = 0;
-  player.grounded = true;
   }
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > WORLD_WIDTH) player.x = WORLD_WIDTH - player.width;
@@ -182,15 +173,16 @@ if (player.y + player.height > canvas.height) {
       enemy.grounded = false;
     }
   } else {
-      enemy.x += enemy.patrolDir * 0.6;
-      if (enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
-      if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
+    // Patrol movement
+    enemy.x += enemy.patrolDir * 0.6;
+    if (enemy.x > enemy.spawnX + 50) enemy.patrolDir = -1;
+    if (enemy.x < enemy.spawnX - 50) enemy.patrolDir = 1;
   }
 
   if (enemy.x < 0) enemy.x = 0;
   if (enemy.x + enemy.w > WORLD_WIDTH) enemy.x = WORLD_WIDTH - enemy.w;
 
-  // --- Collision (Only triggers when grounded, avoids mid-air glitch) ---
+  // --- Collision with Enemy ---
   const touchingEnemy =
     player.x < enemy.x + enemy.w &&
     player.x + player.width > enemy.x &&
@@ -214,8 +206,7 @@ if (player.y + player.height > canvas.height) {
   // --- Camera ---
   cameraX = player.x - canvas.width / 2 + player.width / 2;
   if (cameraX < 0) cameraX = 0;
-  if (cameraX > WORLD_WIDTH - canvas.width)
-    cameraX = WORLD_WIDTH - canvas.width;
+  if (cameraX > WORLD_WIDTH - canvas.width) cameraX = WORLD_WIDTH - canvas.width;
 
   // --- Draw ---
   ctx.fillStyle = "#111";
@@ -241,7 +232,7 @@ if (player.y + player.height > canvas.height) {
   requestAnimationFrame(update);
 }
 
-// --- Start when images loaded ---
+// --- Start game when images loaded ---
 let imagesLoaded = 0;
 [...walkFrames, jumpFrame].forEach(img => {
   img.onload = () => {
