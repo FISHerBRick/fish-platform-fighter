@@ -120,15 +120,11 @@ function update() {
     player.facingRight = true; 
     moving = true; 
   }
-  if (keys.up && player.grounded) { 
-    player.dy = JUMP_POWER; 
-    player.grounded = false; 
-  }
 
   // --- Physics & Platform Collision ---
   player.dy += GRAVITY;
   let nextY = player.y + player.dy;
-  player.grounded = false;
+  let groundedThisFrame = false; // reset at start of frame
 
   for (const p of platforms) {
     const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
