@@ -55,13 +55,11 @@ let jumpPressed = false;
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (["w","a","s","d"].includes(k)) e.preventDefault();
-  if (k === "w") {
-    keys.up = true;
-    if (!jumpPressed && player.grounded) { // only trigger jump once
-      player.dy = JUMP_POWER;
-      player.grounded = false;
-      jumpPressed = true;
-    }
+
+  if (k === "w" && player.grounded && !jumpPressed) {
+    player.dy = JUMP_POWER;
+    player.grounded = false;
+    jumpPressed = true;
   }
   if (k === "a") keys.left = true;
   if (k === "d") keys.right = true;
@@ -144,19 +142,18 @@ function update() {
     }
   }
 
-  // Clamp Y to stay within the canvas
-if (nextY + player.height > canvas.height) {
-    player.y = platforms[0].y - player.height;
-    player.dy = 0;
-    player.grounded = true;
-} else if (nextY < 0) {
-    player.y = 0;
-    player.dy = 0;
-    player.grounded = false;
-} else {
-    player.y = nextY;
-    player.grounded = groundedThisFrame;
+// --- Keep player within world bounds safely ---
+if (nextY + player.height > canvas.height + 100) {
+  // Fell way below ground → reset
+  console.warn("Player fell out of bounds");
+  resetGame();
+  return;
+} else if (nextY < -100) {
+  nextY = 0;
+  player.dy = 0;
 }
+player.y = nextY;
+player.grounded = groundedThisFrame;
 
   // Keep player in bounds
   if (player.y + player.height > canvas.height) {
@@ -231,6 +228,13 @@ if (touchingEnemy) {
     }
   } else if (player.grounded) currentFrame = 0;
 
+  // --- Safety check ---
+if (isNaN(player.x) || isNaN(player.y) || isNaN(player.dy)) {
+  console.warn("Physics glitch detected — resetting player");
+  resetGame();
+  return;
+}
+  
   // --- Camera ---
   cameraX = player.x - canvas.width / 2 + player.width / 2;
 cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
