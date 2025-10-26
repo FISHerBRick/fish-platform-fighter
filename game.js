@@ -51,18 +51,21 @@ let cameraX = 0, score = 0, gameOver = false;
 
 let jumpPressed = false;
 
+let lastKey = null;
+let needReset = false;
+
 // --- Input (WASD only) ---
 document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
-  if (["w","a","s","d"].includes(k)) e.preventDefault();
+  if (["w", "a", "s", "d"].includes(k)) e.preventDefault();
 
   if (k === "w" && player.grounded && !jumpPressed) {
     player.dy = JUMP_POWER;
     player.grounded = false;
     jumpPressed = true;
   }
-  if (k === "a") keys.left = true;
-  if (k === "d") keys.right = true;
+  if (k === "a") { keys.left = true; lastKey = "a"; }
+  if (k === "d") { keys.right = true; lastKey = "d"; }
   if (k === "r") resetGame();
 });
 
@@ -70,10 +73,13 @@ document.addEventListener("keyup", e => {
   const k = e.key.toLowerCase();
   if (k === "w") {
     keys.up = false;
-    jumpPressed = false; // reset lock when key released
+    jumpPressed = false;
   }
   if (k === "a") keys.left = false;
   if (k === "d") keys.right = false;
+
+  // If both left/right released, clear lastKey
+  if (!keys.left && !keys.right) lastKey = null;
 });
 
 // --- Reset Game ---
@@ -108,16 +114,15 @@ function update() {
   let moving = false;
 
   // --- Movement ---
-  if (keys.left) { 
-    player.x -= PLAYER_SPEED; 
-    player.facingRight = false; 
-    moving = true; 
-  }
-  if (keys.right) { 
-    player.x += PLAYER_SPEED; 
-    player.facingRight = true; 
-    moving = true; 
-  }
+if (keys.left && !keys.right && lastKey === "a") {
+  player.x -= PLAYER_SPEED;
+  player.facingRight = false;
+  moving = true;
+} else if (keys.right && !keys.left && lastKey === "d") {
+  player.x += PLAYER_SPEED;
+  player.facingRight = true;
+  moving = true;
+}
 
   // --- Physics & Platform Collision ---
   player.dy += GRAVITY;
@@ -146,8 +151,7 @@ function update() {
 if (nextY + player.height > canvas.height + 100) {
   // Fell way below ground → reset
   console.warn("Player fell out of bounds");
-  resetGame();
-  return;
+  needReset = true;
 } else if (nextY < -100) {
   nextY = 0;
   player.dy = 0;
@@ -231,8 +235,7 @@ if (touchingEnemy) {
   // --- Safety check ---
 if (isNaN(player.x) || isNaN(player.y) || isNaN(player.dy)) {
   console.warn("Physics glitch detected — resetting player");
-  resetGame();
-  return;
+  needReset = true;
 }
   
   // --- Camera ---
@@ -260,6 +263,12 @@ cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
   ctx.font = "20px monospace";
   ctx.fillText(`Score: ${score}`, 20, 30);
 
+  if (needReset) {
+  resetGame();
+  needReset = false;
+  return;
+}
+  
   requestAnimationFrame(update);
 }
 
